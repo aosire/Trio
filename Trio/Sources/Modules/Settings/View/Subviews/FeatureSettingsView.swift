@@ -26,6 +26,9 @@ struct FeatureSettingsView: BaseView {
                     NavigationLink(destination: ExerciseSettingsView(resolver: resolver)) {
                         Text(String(localized: "Exercise", table: "Exercise"))
                     }
+                    NavigationLink(destination: NutritionHealthPreviewView(resolver: resolver)) {
+                        Text(String(localized: "Cronometer Health preview", table: "NutritionPreview"))
+                    }
                     Text("Remote Control").navigationLink(to: .remoteControlConfig, from: self)
                 }
             )

@@ -23,6 +23,8 @@ This folder records the owner's requirements and the differences introduced by A
 
 Exercise configuration, ownership and automation limits are documented in [EXERCISE_SESSIONS.md](EXERCISE_SESSIONS.md).
 
+Cronometer source/time qualification and the remaining dosing-import work are documented in [CRONOMETER_HEALTH_PREVIEW.md](CRONOMETER_HEALTH_PREVIEW.md).
+
 The fifteen-minute Home forecast is documented in [FIFTEEN_MINUTE_FORECAST.md](FIFTEEN_MINUTE_FORECAST.md).
 
 Fetch first; do not merge simply to obtain a comparison:
