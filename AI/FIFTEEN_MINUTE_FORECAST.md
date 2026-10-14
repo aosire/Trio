@@ -12,4 +12,6 @@ The original low-alarm `ForecastedGlucoseEvaluator` remains unchanged. The displ
 
 Fourteen focused tests cover fresh/aged/exact/interpolated targets, scenario reduction, missing/short/gapped/duplicate/out-of-order samples, invalid values, freshness boundaries, invalid/future dates, DST, unit/locale formatting and input immutability. Full algorithm/iOS CI must pass on the proposed commit before readiness. Actual Home layout, large text and VoiceOver have not been visually/device verified.
 
+The first iOS build hit a SwiftUI type-check timeout in the new header body. The follow-up separates label rendering and spoken-description formatting into smaller helpers; prediction semantics remain unchanged. Final validation must use the follow-up head, not the failed first build.
+
 Preserve the distinction between this scenario range and alarm/dosing prediction selection when merging upstream. Revert the feature commits to remove the display; no settings/data migration or driver rollback is required. No release, signing change or live pump test is part of this work.

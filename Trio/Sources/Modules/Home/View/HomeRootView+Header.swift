@@ -21,34 +21,41 @@ private struct FifteenMinuteForecastView: View {
         let now = max(timerDate, Date())
         let estimate = snapshot?.estimate(now: now, glucoseDate: glucoseDate)
         let ageDescription = ageText(now: now)
-        Button { showExplanation = true } label: {
-            VStack(spacing: 2) {
-                Text(String(localized: "In 15 min", table: "GlucoseForecast"))
-                    .font(.caption2)
-                Text((estimate?.formatted(units: units) ?? "—") + " " + units.rawValue)
-                    .font(.caption).fontWeight(.semibold).monospacedDigit()
-                    .lineLimit(1).minimumScaleFactor(0.8)
-                if let ageDescription {
-                    Text(ageDescription)
-                        .font(.system(size: 9))
-                }
-            }
-            .foregroundStyle(estimate == nil ? Color.secondary : Color.primary)
-            .frame(minHeight: 44)
-            .contentShape(Rectangle())
+        let value = (estimate?.formatted(units: units) ?? "—") + " " + units.rawValue
+        let spokenValue = spokenDescription(estimate: estimate, age: ageDescription)
+        return Button { showExplanation = true } label: {
+            forecastLabel(value: value, age: ageDescription, available: estimate != nil)
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(String(localized: "Glucose forecast in 15 minutes", table: "GlucoseForecast")))
-        .accessibilityValue(Text((estimate.map { $0.formatted(units: units) + " " + units.spokenValue }
-            ?? String(localized: "Unavailable or stale", table: "GlucoseForecast"))
-            + (ageDescription.map { ". " + $0 } ?? "")))
+        .accessibilityValue(Text(spokenValue))
         .accessibilityHint(Text(String(localized: "Explains the forecast range", table: "GlucoseForecast")))
         .alert(String(localized: "About this forecast", table: "GlucoseForecast"), isPresented: $showExplanation) {
             Button(String(localized: "OK"), role: .cancel) {}
         } message: {
             Text(String(localized: "The displayed value or range samples the available IOB, COB, UAM and ZT scenarios at 15 minutes from now. It is not a confidence interval or a guarantee. Missing, invalid or stale forecasts and stale glucose show a dash. This display does not change dosing or alarms.", table: "GlucoseForecast"))
         }
+    }
+
+    private func spokenDescription(estimate: GlucoseForecastSnapshot.Estimate?, age: String?) -> String {
+        let value: String
+        if let estimate { value = estimate.formatted(units: units) + " " + units.spokenValue }
+        else { value = String(localized: "Unavailable or stale", table: "GlucoseForecast") }
+        return value + (age.map { ". " + $0 } ?? "")
+    }
+
+    private func forecastLabel(value: String, age: String?, available: Bool) -> some View {
+        VStack(spacing: 2) {
+            Text(String(localized: "In 15 min", table: "GlucoseForecast")).font(.caption2)
+            Text(value)
+                .font(.caption).fontWeight(.semibold).monospacedDigit()
+                .lineLimit(1).minimumScaleFactor(0.8)
+            if let age { Text(age).font(.system(size: 9)) }
+        }
+        .foregroundStyle(available ? Color.primary : Color.secondary)
+        .frame(minHeight: 44)
+        .contentShape(Rectangle())
     }
 }
 
