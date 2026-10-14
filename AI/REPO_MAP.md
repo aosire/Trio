@@ -27,6 +27,7 @@ Inspected at baseline `1bacd86fb19dc325dff044b8cfe52fb7da6c8b98` on 2026-10-14. 
 ## Safety-sensitive review points
 
 - `APSManager`: data freshness/count checks, pump state checks, manual-temp-basal handling, loop serialization, pump capability injection, rounding, and error reporting. A calculation can still run to update IOB/COB when glucose validation fails; follow the error and enactment flow, not just the calculation call.
+- `Trio/Sources/APS/BolusCancellationCoordinator.swift`: app-level reservation for one active stop request, captured pump/pod/dose identity, bounded retries and delayed-confirmation warnings. `APSManager` connects it to the driver and blocks new boluses while pending. Home/Treatments share `BolusCancellationStatusView` in `Views/BolusProgressBar.swift`. See `AI/BOLUS_CANCELLATION.md` for behavior and verification limits.
 - `Trio/Sources/Models/DosingMode.swift` and `Preferences+DosingMode.swift`: automation permissions and derived preference clamps. Recheck both profile creation and determination input preparation when changing mode behavior.
 - `Trio/Sources/Services/BolusCalculator/BolusCalculationManager.swift`: manual bolus calculation and its settings/data inputs.
 - `Trio/Sources/Services/BolusSafety/BolusSafetyValidator.swift`: max-bolus, IOB availability/max-IOB, and recent-bolus checks for external entry points such as Shortcuts and remote commands. This validator is not called centrally by every `APSManager.enactBolus` invocation.
@@ -36,8 +37,11 @@ Inspected at baseline `1bacd86fb19dc325dff044b8cfe52fb7da6c8b98` on 2026-10-14. 
 
 ## Tests and build
 
+- `GlucoseChartBounds` in `Models/TrioSettings.swift` and `HomeStateModel+Setup/ChartAxisSetup.swift`: validated display domain and original automatic scale. `UserInterfaceSettings` edits the canonical pair; Home chart elements clip only in fixed mode. `TrioTests/GlucoseChartBoundsTests.swift` covers outliers, units and persistence. See `AI/FIXED_GLUCOSE_CHART.md`.
+
 - `TrioTests/OpenAPSSwiftTests/`: algorithm scenarios, limits, rounding, meal/IOB/autosensitivity, basal/SMB decisions, and parity fixtures.
 - `TrioTests/`: bolus safety/calculator, dosing-mode clamps/migration, delivery-limit sync, pump history, Core Data, glucose smoothing, alerts, watch-adjacent features, and treatment tests.
+- `TrioTests/BolusCancellationTests.swift`: deterministic fake-driver tests of cancellation acknowledgement, command coalescing, retries, watchdogs, stale status and pump/pod/dose identity. These tests do not establish physical radio reliability or phone layout/accessibility.
 - `AlgorithmPackage/Package.swift`: standalone macOS algorithm package compiling the same sources through tracked symlinks. On macOS run `TZ=Europe/Berlin swift test --package-path AlgorithmPackage` so golden parity suites run rather than skip.
 - `TrioTests/OpenAPSSwiftTests/Parity/ParityHarness.swift`: parity checks require `Europe/Berlin`; `Trio Tests.xcscheme` sets it. Keep golden recording off during verification. Do not regenerate expected outputs merely to make a changed algorithm pass.
 - `.github/workflows/unit_tests.yml`: macOS 26 / Xcode 26.2, iPhone 17 iOS 26.2 simulator, `Trio Tests` scheme, pinned Swift package resolution, build-for-testing and test-without-building. The initial upstream workflow restricts both jobs to the `nightscout` owner. The local CI change allows `aosire/Trio`, adds manual dispatch and pushes to `codex/**`, stops ignoring workflow YAML changes, and pins `TZ=Europe/Berlin` for both suites. See the change log for publication and execution status; a local edit does not enable remote testing.

@@ -10,6 +10,7 @@ struct GlucoseChartView: ChartContent {
     let currentGlucoseTarget: Decimal
     let isSmoothingEnabled: Bool
     let glucoseColorScheme: GlucoseColorScheme
+    var displayBounds: GlucoseChartBounds? = nil
 
     var body: some ChartContent {
         drawGlucoseChart()
@@ -33,34 +34,37 @@ struct GlucoseChartView: ChartContent {
 
     private func drawGlucoseChart() -> some ChartContent {
         ForEach(glucoseData) { item in
-            let glucoseToDisplay = units == .mgdL ? Decimal(item.glucose) : Decimal(item.glucose).asMmolL
+            let glucoseToDisplay = displayBounds == nil ? Decimal(item.glucose).asUnit(units) :
+                GlucoseChartBounds.displayValue(Decimal(item.glucose), units: units)
 
-            if item.isManual {
-                PointMark(
-                    x: .value("Time", item.date ?? Date(), unit: .second),
-                    y: .value("Value", glucoseToDisplay)
-                )
-                .symbolSize(20)
-                .symbol {
-                    Image(systemName: "drop.fill")
-                        .font(.caption2)
-                        .symbolRenderingMode(.monochrome)
-                        .bold()
-                        .foregroundStyle(.red)
+            if displayBounds?.range.contains(Decimal(item.glucose)) ?? true {
+                if item.isManual {
+                    PointMark(
+                        x: .value("Time", item.date ?? Date(), unit: .second),
+                        y: .value("Value", glucoseToDisplay)
+                    )
+                    .symbolSize(20)
+                    .symbol {
+                        Image(systemName: "drop.fill")
+                            .font(.caption2)
+                            .symbolRenderingMode(.monochrome)
+                            .bold()
+                            .foregroundStyle(.red)
+                    }
+                } else {
+                    PointMark(
+                        x: .value("Time", item.date ?? Date(), unit: .second),
+                        y: .value("Value", glucoseToDisplay)
+                    )
+                    .foregroundStyle(pointColor(for: item))
+                    .symbolSize(20)
+                    .symbol(.circle)
                 }
-            } else {
-                PointMark(
-                    x: .value("Time", item.date ?? Date(), unit: .second),
-                    y: .value("Value", glucoseToDisplay)
-                )
-                .foregroundStyle(pointColor(for: item))
-                .symbolSize(20)
-                .symbol(.circle)
             }
 
             if isSmoothingEnabled, let smoothedGlucose = item.smoothedGlucose, smoothedGlucose != 0 {
-                let smoothedGlucoseForDisplay: Decimal = units == .mgdL ? smoothedGlucose.decimalValue : smoothedGlucose
-                    .decimalValue.asMmolL
+                let smoothedGlucoseForDisplay = displayBounds == nil ? smoothedGlucose.decimalValue.asUnit(units) :
+                    GlucoseChartBounds.displayValue(smoothedGlucose.decimalValue, units: units)
                 LineMark(
                     x: .value("Time", item.date ?? Date(), unit: .second),
                     y: .value("Value", smoothedGlucoseForDisplay),

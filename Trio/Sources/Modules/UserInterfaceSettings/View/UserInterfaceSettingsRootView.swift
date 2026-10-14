@@ -1,6 +1,75 @@
 import SwiftUI
 import Swinject
 
+private struct GlucoseChartBoundsEditor: View {
+    @ObservedObject var state: UserInterfaceSettings.StateModel
+    @State private var minimum = ""
+    @State private var maximum = ""
+    @State private var error = false
+
+    private func format(_ value: Decimal) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.usesGroupingSeparator = false
+        formatter.maximumFractionDigits = state.units == .mgdL ? 0 : 1
+        return formatter.string(from: (state.units == .mgdL ? value : value.asMmolL) as NSDecimalNumber) ?? ""
+    }
+
+    private func load() {
+        minimum = format(state.glucoseChartMinimum)
+        maximum = format(state.glucoseChartMaximum)
+        error = false
+    }
+
+    var body: some View {
+        Section {
+            Toggle(String(localized: "Use fixed glucose chart bounds", table: "GlucoseChart"), isOn: $state.useFixedGlucoseChartBounds)
+            if state.useFixedGlucoseChartBounds {
+                HStack {
+                    Text(String(localized: "Chart minimum", table: "GlucoseChart"))
+                    TextField("", text: $minimum)
+                        .multilineTextAlignment(.trailing)
+                        .keyboardType(.decimalPad)
+                        .accessibilityLabel(Text(String(localized: "Chart minimum", table: "GlucoseChart")))
+                    Text(state.units.rawValue).foregroundStyle(.secondary)
+                }
+                HStack {
+                    Text(String(localized: "Chart maximum", table: "GlucoseChart"))
+                    TextField("", text: $maximum)
+                        .multilineTextAlignment(.trailing)
+                        .keyboardType(.decimalPad)
+                        .accessibilityLabel(Text(String(localized: "Chart maximum", table: "GlucoseChart")))
+                    Text(state.units.rawValue).foregroundStyle(.secondary)
+                }
+                Button(String(localized: "Apply chart bounds", table: "GlucoseChart")) {
+                    // Preserve canonical precision if only the other field changed.
+                    let lower = minimum == format(state.glucoseChartMinimum) ? state.glucoseChartMinimum :
+                        GlucoseChartBounds.parse(minimum, units: state.units)
+                    let upper = maximum == format(state.glucoseChartMaximum) ? state.glucoseChartMaximum :
+                        GlucoseChartBounds.parse(maximum, units: state.units)
+                    if let lower, let upper, state.saveChartBounds(minimum: lower, maximum: upper) {
+                        load()
+                    } else {
+                        error = true
+                    }
+                }
+                if error {
+                    Text(String(localized: "Enter an ordered range between 0 and 1000 mg/dL (0–55.5 mmol/L), at least 1 mg/dL apart.", table: "GlucoseChart"))
+                        .font(.footnote)
+                        .foregroundStyle(.red)
+                }
+            }
+        } header: {
+            Text(String(localized: "Glucose chart scale", table: "GlucoseChart"))
+        } footer: {
+            Text(String(localized: "Applies to the Home glucose chart only. Readings outside the bounds are hidden from the plot. Current glucose, history, alarms and dosing still use all readings.", table: "GlucoseChart"))
+        }
+        .onAppear { load() }
+        .onChange(of: state.units) { load() }
+        .settingsSearchTarget(label: String(localized: "Glucose chart scale", table: "GlucoseChart"))
+    }
+}
+
 extension UserInterfaceSettings {
     struct RootView: BaseView {
         let resolver: Resolver
@@ -41,6 +110,7 @@ extension UserInterfaceSettings {
 
         var body: some View {
             List {
+                GlucoseChartBoundsEditor(state: state)
                 Section(
                     header: Text("General Appearance"),
                     content: {

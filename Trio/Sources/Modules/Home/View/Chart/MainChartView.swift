@@ -221,6 +221,9 @@ struct MainChartView: View {
             units == .mgdL ? Decimal(value).description : Decimal(value).formattedAsMmolL
         }
         let latestString = format(latest.glucose)
+        if state.fixedGlucoseChartBounds != nil {
+            return String(localized: "Glucose chart. Latest \(latestString) \(unitLabel). Fixed scale. Off-scale readings are hidden.", table: "GlucoseChart")
+        }
         let values = sample.map(\.glucose)
         if let low = values.min(), let high = values.max(), low != high {
             return String(
@@ -292,6 +295,7 @@ extension MainChartView {
     /// markers `CarbView` pins to the old baseline) render fully instead of straddling the
     /// plot edge. Also gives the plot visual breathing room at top and bottom.
     var paddedGlucoseYDomain: ClosedRange<Decimal> {
+        if let bounds = state.fixedGlucoseChartBounds { return bounds.displayRange(units: units) }
         let padding: Decimal = 25 // mg/dL
         let lower = state.minYAxisValue - padding
         let upper = state.maxYAxisValue + padding
@@ -338,7 +342,8 @@ extension MainChartView {
     }
 
     private func glucoseYPosition(for glucose: GlucoseStored) -> CGFloat {
-        let value = units == .mgdL ? Decimal(glucose.glucose) : Decimal(glucose.glucose).asMmolL
+        let value = state.fixedGlucoseChartBounds == nil ? Decimal(glucose.glucose).asUnit(units) :
+            GlucoseChartBounds.displayValue(Decimal(glucose.glucose), units: units)
         let domain = paddedGlucoseYDomain
         let span = domain.upperBound - domain.lowerBound
         let fraction = span == 0 ? 0.5 :
@@ -405,12 +410,14 @@ extension MainChartView {
                     .position(x: x, y: stackHeight / 2)
 
                 // Selected glucose highlight.
-                Circle().fill(markColor)
-                    .frame(width: 15, height: 15)
-                    .position(x: x, y: glucoseY)
-                Circle().fill(Color.primary)
-                    .frame(width: 6, height: 6)
-                    .position(x: x, y: glucoseY)
+                if state.fixedGlucoseChartBounds?.range.contains(Decimal(selectedGlucose.glucose)) ?? true {
+                    Circle().fill(markColor)
+                        .frame(width: 15, height: 15)
+                        .position(x: x, y: glucoseY)
+                    Circle().fill(Color.primary)
+                        .frame(width: 6, height: 6)
+                        .position(x: x, y: glucoseY)
+                }
 
                 // Selected COB / (scaled) IOB dots on the bottom pane, at the
                 // determination's own timestamp: the lookup picks the newest
@@ -940,7 +947,8 @@ extension MainChartCanvas {
                 tempTargetStored: state.tempTargetStored,
                 tempTargetRunStored: state.tempTargetRunStored,
                 units: state.units,
-                viewContext: context
+                viewContext: context,
+                displayBounds: state.fixedGlucoseChartBounds
             )
 
             InsulinView(
@@ -966,7 +974,8 @@ extension MainChartCanvas {
                 units: state.units,
                 maxValue: state.maxYAxisValue,
                 forecastDisplayType: state.forecastDisplayType,
-                lastDeterminationDate: state.determinationsFromPersistence.first?.deliverAt ?? .distantPast
+                lastDeterminationDate: state.determinationsFromPersistence.first?.deliverAt ?? .distantPast,
+                isFixedScale: state.fixedGlucoseChartBounds != nil
             )
 
             GlucoseChartView(
@@ -976,7 +985,8 @@ extension MainChartCanvas {
                 lowGlucose: state.lowGlucose,
                 currentGlucoseTarget: state.currentGlucoseTarget,
                 isSmoothingEnabled: state.isSmoothingEnabled,
-                glucoseColorScheme: state.glucoseColorScheme
+                glucoseColorScheme: state.glucoseColorScheme,
+                displayBounds: state.fixedGlucoseChartBounds
             )
         }
         .frame(width: canvasWidth, height: mainHeight)
@@ -984,6 +994,9 @@ extension MainChartCanvas {
         .chartXAxis { mainChartXAxis }
         .chartYAxis(.hidden)
         .chartYScale(domain: glucoseYDomain)
+        .chartPlotStyle { plot in
+            if state.fixedGlucoseChartBounds != nil { plot.clipped() } else { plot }
+        }
         .chartLegend(.hidden)
         .chartForegroundStyleScale([
             "iob": Color.insulin,

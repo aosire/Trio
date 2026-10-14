@@ -15,6 +15,9 @@ This folder records the owner's requirements and the differences introduced by A
 - [BASELINE.md](BASELINE.md): immutable onboarding commit, upstream comparison, dependencies, and environment limitations.
 - [REPO_MAP.md](REPO_MAP.md): starting points for code navigation, safety review, and verification.
 - [CHANGELOG.md](CHANGELOG.md): chronological record of AI-assisted changes and upstream syncs.
+- [FEATURE_ASSESSMENT.md](FEATURE_ASSESSMENT.md): implementation options and required verification for the five requested improvements.
+- [BOLUS_CANCELLATION.md](BOLUS_CANCELLATION.md): one-tap cancellation behavior and verification limits.
+- [FIXED_GLUCOSE_CHART.md](FIXED_GLUCOSE_CHART.md): fixed Home chart bounds, scope and regression coverage.
 
 ## Comparing with upstream
 

@@ -1,0 +1,86 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "Use fixed glucose chart bounds": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "value": "Use fixed glucose chart bounds",
+            "state": "translated"
+          }
+        }
+      }
+    },
+    "Chart minimum": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "value": "Chart minimum",
+            "state": "translated"
+          }
+        }
+      }
+    },
+    "Chart maximum": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "value": "Chart maximum",
+            "state": "translated"
+          }
+        }
+      }
+    },
+    "Apply chart bounds": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "value": "Apply chart bounds",
+            "state": "translated"
+          }
+        }
+      }
+    },
+    "Enter an ordered range between 0 and 1000 mg/dL (0–55.5 mmol/L), at least 1 mg/dL apart.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "value": "Enter an ordered range between 0 and 1000 mg/dL (0–55.5 mmol/L), at least 1 mg/dL apart.",
+            "state": "translated"
+          }
+        }
+      }
+    },
+    "Glucose chart scale": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "value": "Glucose chart scale",
+            "state": "translated"
+          }
+        }
+      }
+    },
+    "Applies to the Home glucose chart only. Readings outside the bounds are hidden from the plot. Current glucose, history, alarms and dosing still use all readings.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "value": "Applies to the Home glucose chart only. Readings outside the bounds are hidden from the plot. Current glucose, history, alarms and dosing still use all readings.",
+            "state": "translated"
+          }
+        }
+      }
+    },
+    "Glucose chart. Latest %@ %@. Fixed scale. Off-scale readings are hidden.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "value": "Glucose chart. Latest %@ %@. Fixed scale. Off-scale readings are hidden.",
+            "state": "translated"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

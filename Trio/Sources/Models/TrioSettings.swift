@@ -52,6 +52,15 @@ struct TrioSettings: JSON, Equatable, Encodable {
     var rulerMarks: Bool = true
     var bolusDisplayThreshold: BolusDisplayThreshold = .allUnits
     var forecastDisplayType: ForecastDisplayType = .cone
+    var useFixedGlucoseChartBounds: Bool = false
+    /// Display preferences only, always persisted in mg/dL.
+    var glucoseChartMinimum: Decimal = 40
+    var glucoseChartMaximum: Decimal = 250
+
+    var fixedGlucoseChartBounds: GlucoseChartBounds? {
+        guard useFixedGlucoseChartBounds else { return nil }
+        return GlucoseChartBounds(minimum: glucoseChartMinimum, maximum: glucoseChartMaximum)
+    }
     var maxCarbs: Decimal = 250
     var maxFat: Decimal = 250
     var maxProtein: Decimal = 250
@@ -294,6 +303,15 @@ extension TrioSettings: Decodable {
             settings.forecastDisplayType = forecastDisplayType
         }
 
+        if let minimum = try? container.decode(Decimal.self, forKey: .glucoseChartMinimum),
+           let maximum = try? container.decode(Decimal.self, forKey: .glucoseChartMaximum),
+           GlucoseChartBounds(minimum: minimum, maximum: maximum) != nil
+        {
+            settings.glucoseChartMinimum = minimum
+            settings.glucoseChartMaximum = maximum
+            settings.useFixedGlucoseChartBounds = (try? container.decode(Bool.self, forKey: .useFixedGlucoseChartBounds)) ?? false
+        }
+
         if let eA1cDisplayUnit = try? container.decode(EstimatedA1cDisplayUnit.self, forKey: .eA1cDisplayUnit) {
             settings.eA1cDisplayUnit = eA1cDisplayUnit
         }
@@ -391,5 +409,36 @@ extension TrioSettings: Decodable {
         }
 
         self = settings
+    }
+}
+
+/// Canonical chart domain; never filters or changes stored therapy data.
+struct GlucoseChartBounds: Equatable {
+    let range: ClosedRange<Decimal>
+
+    init?(minimum: Decimal, maximum: Decimal) {
+        guard NSDecimalNumber(decimal: minimum).doubleValue.isFinite,
+              NSDecimalNumber(decimal: maximum).doubleValue.isFinite,
+              minimum >= 0, maximum <= 1000, maximum - minimum >= 1
+        else { return nil }
+        range = minimum ... maximum
+    }
+
+    func displayRange(units: GlucoseUnits) -> ClosedRange<Decimal> {
+        units == .mgdL ? range : (range.lowerBound * GlucoseUnits.exchangeRate) ... (range.upperBound * GlucoseUnits.exchangeRate)
+    }
+
+    static func displayValue(_ value: Decimal, units: GlucoseUnits) -> Decimal {
+        units == .mgdL ? value : value * GlucoseUnits.exchangeRate
+    }
+
+    static func parse(_ text: String, units: GlucoseUnits, locale: Locale = .current) -> Decimal? {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        let separator = locale.decimalSeparator ?? "."
+        let normalized = trimmed.replacingOccurrences(of: separator, with: ".")
+        guard normalized.range(of: "^[0-9]+(?:\\.[0-9]+)?$", options: .regularExpression) != nil,
+              let value = Decimal(string: normalized, locale: Locale(identifier: "en_US_POSIX"))
+        else { return nil }
+        return units == .mgdL ? value : value / GlucoseUnits.exchangeRate
     }
 }

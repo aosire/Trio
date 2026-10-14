@@ -7,37 +7,11 @@ extension Home.StateModel {
     @MainActor func updateGlucoseChartYAxis(glucoseValues: [GlucoseStored]) {
         let glucoseMapped = glucoseValues.map { Decimal($0.glucose) }
         let forecastValues = preprocessedData.map { Decimal($0.forecastValue.value) }
-
-        // Ensure all values exist, otherwise set default values
-        guard let minGlucose = glucoseMapped.min(), let maxGlucose = glucoseMapped.max() else {
-            minYAxisValue = 39
-            maxYAxisValue = 200
-            return
-        }
-
-        let minForecast = forecastValues.min()
-        let maxForecast = forecastValues.max()
-
-        // Adjust max forecast to be no more than 50 over max glucose
-        let adjustedMaxForecast = min(maxForecast ?? maxGlucose + 50, maxGlucose + 50)
-        let minOverall = min(minGlucose, minForecast ?? minGlucose)
-        let maxOverall = max(maxGlucose, adjustedMaxForecast)
-
-        var maxYValue: Decimal = 200
-        if maxOverall > 200, maxOverall <= 225 {
-            maxYValue = 250
-        } else if maxOverall > 225, maxOverall <= 275 {
-            maxYValue = 300
-        } else if maxOverall > 275, maxOverall <= 325 {
-            maxYValue = 350
-        } else if maxOverall > 325 {
-            maxYValue = 400
-        }
-
-        // keep the low threshold (and target) inside the domain: RuleMarks
-        // below the floor would clamp onto the plot edge
-        minYAxisValue = min(minOverall, lowGlucose - 20)
-        maxYAxisValue = maxYValue
+        let range = GlucoseChartBounds.resolve(
+            fixed: fixedGlucoseChartBounds, glucose: glucoseMapped, forecasts: forecastValues, lowThreshold: lowGlucose
+        )
+        minYAxisValue = range.lowerBound
+        maxYAxisValue = range.upperBound
     }
 
     /// Recomputes the COB chart Y axis bounds from the fetched determination objects.
@@ -64,5 +38,22 @@ extension Home.StateModel {
             minValueIobChart = 0
             maxValueIobChart = 5
         }
+    }
+}
+
+extension GlucoseChartBounds {
+    /// Preserve the existing automatic scale; fixed mode ignores data outliers.
+    static func resolve(fixed: GlucoseChartBounds?, glucose: [Decimal], forecasts: [Decimal], lowThreshold: Decimal) -> ClosedRange<Decimal> {
+        if let fixed { return fixed.range }
+        guard let minimum = glucose.min(), let maximum = glucose.max() else { return 39 ... 200 }
+        let adjustedMaximum = min(forecasts.max() ?? maximum + 50, maximum + 50)
+        let overallMaximum = max(maximum, adjustedMaximum)
+        let upper: Decimal
+        if overallMaximum <= 200 { upper = 200 }
+        else if overallMaximum <= 225 { upper = 250 }
+        else if overallMaximum <= 275 { upper = 300 }
+        else if overallMaximum <= 325 { upper = 350 }
+        else { upper = 400 }
+        return min(minimum, forecasts.min() ?? minimum, lowThreshold - 20) ... upper
     }
 }

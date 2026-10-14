@@ -35,6 +35,7 @@ struct OverrideView: ChartContent {
 
             let target = getOverrideTarget(override: override)
 
+            if state.fixedGlucoseChartBounds?.range.contains(target) ?? true {
             RuleMark(
                 xStart: .value("Start", start, unit: .second),
                 xEnd: .value("End", end, unit: .second),
@@ -42,6 +43,7 @@ struct OverrideView: ChartContent {
             )
             .foregroundStyle(Color.purple.opacity(0.4))
             .lineStyle(.init(lineWidth: 8))
+            }
         }
     }
 
@@ -50,6 +52,7 @@ struct OverrideView: ChartContent {
             let start: Date = overrideRunStored.startDate ?? .distantPast
             let end: Date = overrideRunStored.endDate ?? Date()
             let target = (overrideRunStored.target?.decimalValue ?? 100) == 0 ? 100 : overrideRunStored.target!.decimalValue
+            if state.fixedGlucoseChartBounds?.range.contains(target) ?? true {
             RuleMark(
                 xStart: .value("Start", start, unit: .second),
                 xEnd: .value("End", end, unit: .second),
@@ -57,6 +60,7 @@ struct OverrideView: ChartContent {
             )
             .foregroundStyle(Color.purple.opacity(0.25))
             .lineStyle(.init(lineWidth: 8))
+            }
         }
     }
 

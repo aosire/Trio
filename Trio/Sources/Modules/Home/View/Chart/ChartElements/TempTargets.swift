@@ -8,6 +8,7 @@ struct TempTargetView: ChartContent {
     let tempTargetRunStored: [TempTargetRunStored]
     let units: GlucoseUnits
     let viewContext: NSManagedObjectContext
+    var displayBounds: GlucoseChartBounds? = nil
 
     var body: some ChartContent {
         drawActiveTempTargets()
@@ -27,6 +28,7 @@ struct TempTargetView: ChartContent {
                 if let target = MainChartHelper
                     .calculateTarget(objectID: tt.objectID, attribute: "target", context: viewContext)
                 {
+                    if displayBounds?.range.contains(target) ?? true {
                     RuleMark(
                         xStart: .value("Start", start, unit: .second),
                         xEnd: .value("End", end, unit: .second),
@@ -34,6 +36,7 @@ struct TempTargetView: ChartContent {
                     )
                     .foregroundStyle(Color.green.opacity(0.4))
                     .lineStyle(.init(lineWidth: 8))
+                    }
                 }
             }
         }
@@ -44,6 +47,7 @@ struct TempTargetView: ChartContent {
             let start: Date = tt.startDate ?? .distantPast
             let end: Date = tt.endDate ?? Date()
             let target = tt.target?.decimalValue ?? 100
+            if displayBounds?.range.contains(target) ?? true {
             RuleMark(
                 xStart: .value("Start", start, unit: .second),
                 xEnd: .value("End", end, unit: .second),
@@ -51,6 +55,7 @@ struct TempTargetView: ChartContent {
             )
             .foregroundStyle(Color.green.opacity(0.25))
             .lineStyle(.init(lineWidth: 8))
+            }
         }
     }
 }

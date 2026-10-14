@@ -831,6 +831,26 @@ extension SettingsExport {
                 addSetting(
                     category: featuresCategory,
                     subcategory: userInterfaceSubcategory,
+                    name: String(localized: "Use fixed glucose chart bounds", table: "GlucoseChart"),
+                    value: trioSettings.useFixedGlucoseChartBounds ? String(localized: "Enabled") : String(localized: "Disabled")
+                )
+                addSetting(
+                    category: featuresCategory,
+                    subcategory: userInterfaceSubcategory,
+                    name: String(localized: "Chart minimum", table: "GlucoseChart"),
+                    value: trioSettings.glucoseChartMinimum.asUnit(trioSettings.units).description,
+                    unit: trioSettings.units.rawValue
+                )
+                addSetting(
+                    category: featuresCategory,
+                    subcategory: userInterfaceSubcategory,
+                    name: String(localized: "Chart maximum", table: "GlucoseChart"),
+                    value: trioSettings.glucoseChartMaximum.asUnit(trioSettings.units).description,
+                    unit: trioSettings.units.rawValue
+                )
+                addSetting(
+                    category: featuresCategory,
+                    subcategory: userInterfaceSubcategory,
                     name: String(localized: "Glucose Color Scheme"),
                     value: trioSettings.glucoseColorScheme.rawValue
                 )

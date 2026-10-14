@@ -10,6 +10,7 @@ struct ForecastView: ChartContent {
     let maxValue: Decimal
     let forecastDisplayType: ForecastDisplayType
     let lastDeterminationDate: Date
+    var isFixedScale: Bool = false
 
     var body: some ChartContent {
         if forecastDisplayType == .lines {
@@ -25,6 +26,10 @@ struct ForecastView: ChartContent {
         return currentTime.addingTimeInterval(timeInterval)
     }
 
+    private func displayValue(_ value: Decimal) -> Decimal {
+        isFixedScale ? GlucoseChartBounds.displayValue(value, units: units) : value.asUnit(units)
+    }
+
     private func drawForecastsCone() -> some ChartContent {
         // Draw AreaMark for the forecast bounds
         ForEach(0 ..< max(minForecast.count, maxForecast.count), id: \.self) { index in
@@ -34,38 +39,32 @@ struct ForecastView: ChartContent {
 
                 // if distance between respective min and max is 0, provide a default range
                 if yMinMaxDelta == 0 {
-                    let yMinValue = units == .mgdL ? Decimal(minForecast[index] - 1) :
-                        Decimal(minForecast[index] - 1)
-                        .asMmolL
-                    let yMaxValue = units == .mgdL ? Decimal(minForecast[index] + 1) :
-                        Decimal(minForecast[index] + 1)
-                        .asMmolL
+                    let yMinValue = displayValue(Decimal(minForecast[index] - 1))
+                    let yMaxValue = displayValue(Decimal(minForecast[index] + 1))
 
                     if xValue <= Date(timeIntervalSinceNow: TimeInterval(hours: 2.5)) {
                         AreaMark(
                             x: .value("Time", xValue),
                             // maxValue is already parsed to user units, no need to parse
-                            yStart: .value("Min Value", yMinValue <= maxValue ? yMinValue : maxValue),
-                            yEnd: .value("Max Value", yMaxValue <= maxValue ? yMaxValue : maxValue)
+                            yStart: .value("Min Value", isFixedScale ? yMinValue : min(yMinValue, maxValue)),
+                            yEnd: .value("Max Value", isFixedScale ? yMaxValue : min(yMaxValue, maxValue))
                         )
                         .foregroundStyle(Color.blue.opacity(0.5))
-                        .interpolationMethod(.catmullRom)
+                        .interpolationMethod(isFixedScale ? .linear : .catmullRom)
                     }
                 } else {
-                    let yMinValue = units == .mgdL ? Decimal(minForecast[index]) : Decimal(minForecast[index])
-                        .asMmolL
-                    let yMaxValue = units == .mgdL ? Decimal(maxForecast[index]) : Decimal(maxForecast[index])
-                        .asMmolL
+                    let yMinValue = displayValue(Decimal(minForecast[index]))
+                    let yMaxValue = displayValue(Decimal(maxForecast[index]))
 
                     if xValue <= Date(timeIntervalSinceNow: TimeInterval(hours: 2.5)) {
                         AreaMark(
                             x: .value("Time", xValue),
                             // maxValue is already parsed to user units, no need to parse
-                            yStart: .value("Min Value", yMinValue <= maxValue ? yMinValue : maxValue),
-                            yEnd: .value("Max Value", yMaxValue <= maxValue ? yMaxValue : maxValue)
+                            yStart: .value("Min Value", isFixedScale ? yMinValue : min(yMinValue, maxValue)),
+                            yEnd: .value("Max Value", isFixedScale ? yMaxValue : min(yMaxValue, maxValue))
                         )
                         .foregroundStyle(Color.blue.opacity(0.5))
-                        .interpolationMethod(.catmullRom)
+                        .interpolationMethod(isFixedScale ? .linear : .catmullRom)
                     }
                 }
             }
@@ -77,7 +76,7 @@ struct ForecastView: ChartContent {
             let forecastValue = tuple.forecastValue
             let forecast = tuple.forecast
             let valueAsDecimal = Decimal(forecastValue.value)
-            let displayValue = units == .mmolL ? valueAsDecimal.asMmolL : valueAsDecimal
+            let displayValue = displayValue(valueAsDecimal)
             let xValue = timeForIndex(forecastValue.index)
 
             if xValue <= Date(timeIntervalSinceNow: TimeInterval(hours: 2.5)) {
