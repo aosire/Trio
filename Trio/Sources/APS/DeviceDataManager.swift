@@ -433,14 +433,8 @@ extension BaseDeviceDataManager: PumpManagerDelegate {
         // TODO: - remove this after ensuring that NS still gets the same infos from Core Data
         storage.save(status.pumpStatus, as: OpenAPS.Monitor.status)
 
-        switch status.bolusState {
-        case .initiating:
-            bolusTrigger.send(.initiating)
-        case let .inProgress(dose):
-            bolusTrigger.send(.inProgress)
-        default:
-            bolusTrigger.send(.noBolus)
-        }
+        // A stop command in flight is not confirmation that insulin stopped.
+        bolusTrigger.send(BolusStatus(pumpState: status.bolusState))
 
         switch status.basalDeliveryState {
         case let .active(at):

@@ -574,7 +574,17 @@ extension Treatments {
             }
 
             return Section {
-                if shouldDisplayBolusProgress {
+                if state.bolusCancellationState != .idle {
+                    BolusCancellationStatusView(
+                        state: state.bolusCancellationState,
+                        progress: state.bolusProgress,
+                        total: state.lastPumpBolus?.bolus?.amount as Decimal?,
+                        retry: { state.cancelBolus() },
+                        dismiss: { state.dismissBolusCancellationResult() }
+                    )
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10))
+                } else if shouldDisplayBolusProgress {
                     bolusInProgressView
                         .listRowBackground(Color.clear)
                         .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
@@ -771,7 +781,7 @@ extension Treatments {
         }
 
         private var disableTaskButton: Bool {
-            bolusInProgressForEntry || state.addButtonPressed || limitExceeded
+            state.bolusCancellationState.isPending || bolusInProgressForEntry || state.addButtonPressed || limitExceeded
         }
     }
 

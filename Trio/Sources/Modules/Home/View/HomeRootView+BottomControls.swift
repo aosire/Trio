@@ -499,7 +499,6 @@ extension Home.RootView {
 
                 if state.bolusStatus == .inProgress {
                     Button {
-                        state.showProgressView()
                         state.cancelBolus()
                     } label: {
                         Image(systemName: "xmark.app")
@@ -812,7 +811,16 @@ extension Home.RootView {
     @ViewBuilder func bottomControls() -> some View {
         VStack(spacing: HomeLayout.bottomZonePadding) {
             Group {
-                if let progress = state.bolusProgress {
+                if state.bolusCancellationState != .idle {
+                    BolusCancellationStatusView(
+                        state: state.bolusCancellationState,
+                        progress: state.bolusProgress,
+                        total: state.lastPumpBolus?.bolus?.amount as Decimal?,
+                        retry: { state.cancelBolus() },
+                        dismiss: { state.dismissBolusCancellationResult() }
+                    )
+                    .padding(.horizontal, 10)
+                } else if let progress = state.bolusProgress {
                     bolusView(progress)
                 } else {
                     adjustmentView()
