@@ -1,6 +1,57 @@
 import SwiftUI
 import UIKit
 
+private struct FifteenMinuteForecastView: View {
+    let snapshot: GlucoseForecastSnapshot?
+    let timerDate: Date
+    let glucoseDate: Date?
+    let units: GlucoseUnits
+    @State private var showExplanation = false
+
+    private func ageText(now: Date) -> String? {
+        guard let snapshot, now >= snapshot.origin,
+              now.timeIntervalSince(snapshot.origin).isFinite,
+              now.timeIntervalSince(snapshot.origin) < 24 * 60 * 60
+        else { return nil }
+        let age = Int(now.timeIntervalSince(snapshot.origin) / 60)
+        return String(localized: "Forecast \(age) min old", table: "GlucoseForecast")
+    }
+
+    var body: some View {
+        let now = max(timerDate, Date())
+        let estimate = snapshot?.estimate(now: now, glucoseDate: glucoseDate)
+        let ageDescription = ageText(now: now)
+        Button { showExplanation = true } label: {
+            VStack(spacing: 2) {
+                Text(String(localized: "In 15 min", table: "GlucoseForecast"))
+                    .font(.caption2)
+                Text((estimate?.formatted(units: units) ?? "—") + " " + units.rawValue)
+                    .font(.caption).fontWeight(.semibold).monospacedDigit()
+                    .lineLimit(1).minimumScaleFactor(0.8)
+                if let ageDescription {
+                    Text(ageDescription)
+                        .font(.system(size: 9))
+                }
+            }
+            .foregroundStyle(estimate == nil ? Color.secondary : Color.primary)
+            .frame(minHeight: 44)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(String(localized: "Glucose forecast in 15 minutes", table: "GlucoseForecast")))
+        .accessibilityValue(Text((estimate.map { $0.formatted(units: units) + " " + units.spokenValue }
+            ?? String(localized: "Unavailable or stale", table: "GlucoseForecast"))
+            + (ageDescription.map { ". " + $0 } ?? "")))
+        .accessibilityHint(Text(String(localized: "Explains the forecast range", table: "GlucoseForecast")))
+        .alert(String(localized: "About this forecast", table: "GlucoseForecast"), isPresented: $showExplanation) {
+            Button(String(localized: "OK"), role: .cancel) {}
+        } message: {
+            Text(String(localized: "The displayed value or range samples the available IOB, COB, UAM and ZT scenarios at 15 minutes from now. It is not a confidence interval or a guarantee. Missing, invalid or stale forecasts and stale glucose show a dash. This display does not change dosing or alarms.", table: "GlucoseForecast"))
+        }
+    }
+}
+
 // MARK: - Device pickers
 
 /// Presents the "Add CGM" / "Add Pump" pickers for the home screen.
@@ -145,7 +196,7 @@ extension Home.RootView {
     }
 
     @ViewBuilder func rightHeaderPanel() -> some View {
-        VStack(alignment: .center, spacing: 20) {
+        VStack(alignment: .center, spacing: 10) {
             /// Loop view at bottomLeading
             LoopView(
                 dosingMode: state.dosingMode,
@@ -195,6 +246,13 @@ extension Home.RootView {
                 .accessibilityLabel(Text("Eventual glucose"))
                 .accessibilityValue(Text(verbatim: "--"))
             }
+            FifteenMinuteForecastView(
+                snapshot: state.glucoseForecastSnapshot?.origin == state.enactedAndNonEnactedDeterminations.first?.deliverAt
+                    ? state.glucoseForecastSnapshot : nil,
+                timerDate: state.timerDate,
+                glucoseDate: state.cgmAvailable ? state.latestTwoGlucoseValues.last?.date : nil,
+                units: state.units
+            )
         }
     }
 }

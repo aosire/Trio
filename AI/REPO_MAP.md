@@ -38,6 +38,7 @@ Inspected at baseline `1bacd86fb19dc325dff044b8cfe52fb7da6c8b98` on 2026-10-14. 
 ## Tests and build
 
 - `GlucoseChartBounds` in `Models/TrioSettings.swift` and `HomeStateModel+Setup/ChartAxisSetup.swift`: validated display domain and original automatic scale. `UserInterfaceSettings` edits the canonical pair; Home chart elements clip only in fixed mode. `TrioTests/GlucoseChartBoundsTests.swift` covers outliers, units and persistence. See `AI/FIXED_GLUCOSE_CHART.md`.
+- `GlucoseForecastSnapshot` in `Services/Alerts/ForecastedGlucoseEvaluator.swift`: immutable display-only samples and timed scenario range. Home forecast setup captures origin/identity; the right header shows a fifteen-minute result and age. The existing alarm evaluator remains separate. `TrioTests/ForecastedGlucoseEvaluatorTests.swift` also contains the fourteen-test display suite.
 
 - `TrioTests/OpenAPSSwiftTests/`: algorithm scenarios, limits, rounding, meal/IOB/autosensitivity, basal/SMB decisions, and parity fixtures.
 - `TrioTests/`: bolus safety/calculator, dosing-mode clamps/migration, delivery-limit sync, pump history, Core Data, glucose smoothing, alerts, watch-adjacent features, and treatment tests.

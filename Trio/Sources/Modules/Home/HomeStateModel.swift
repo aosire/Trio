@@ -116,6 +116,7 @@ extension Home {
         var tempTargetRunStored: [TempTargetRunStored] = []
         var isOverrideCancelled: Bool = false
         var preprocessedData: [(id: UUID, forecast: Forecast, forecastValue: ForecastValue)] = []
+        var glucoseForecastSnapshot: GlucoseForecastSnapshot?
         var pumpStatusHighlightMessage: String?
         var pumpStatusBadgeImage: UIImage?
         var pumpStatusBadgeColor: Color?
