@@ -106,9 +106,11 @@ extension Home.RootView {
 
             } else {
                 /// Do not show the Override anymore
+                let expectedExercise = ExerciseOverrideIdentity.fromStored(id: latestOverride.id, start: latestOverride.date)
+                let expiredObjectID = latestOverride.objectID
+                let expectedExpiry = date.addingTimeInterval(addedMinutes.minutes.timeInterval)
                 Task {
-                    guard let objectID = self.latestOverride.first?.objectID else { return }
-                    await state.cancelOverride(withID: objectID)
+                    await state.cancelOverride(withID: expiredObjectID, expectedExercise: expectedExercise, expectedExpiry: expectedExpiry)
                 }
             }
         }

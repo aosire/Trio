@@ -791,7 +791,7 @@ extension OpenAPS {
     }
 
     func fetchActiveOverrides(on context: NSManagedObjectContext) throws -> [OverrideStored] {
-        try CoreDataStack.shared.fetchEntities(
+        let rows = try CoreDataStack.shared.fetchEntities(
             ofType: OverrideStored.self,
             onContext: context,
             predicate: NSPredicate.lastActiveOverride,
@@ -799,6 +799,11 @@ extension OpenAPS {
             ascending: false,
             fetchLimit: 1
         ) as? [OverrideStored] ?? []
+        return rows.filter {
+            ExerciseOverrideIdentity.isEffective(
+                id: $0.id, start: $0.date, duration: $0.duration?.decimalValue, indefinite: $0.indefinite, now: Date()
+            )
+        }
     }
 
     func fetchHistoricalTDDData(from date: Date, on context: NSManagedObjectContext) throws -> [[String: Any]] {

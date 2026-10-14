@@ -14,4 +14,6 @@ Fourteen focused tests cover fresh/aged/exact/interpolated targets, scenario red
 
 The first iOS build hit a SwiftUI type-check timeout in the new header body. The follow-up separates label rendering and spoken-description formatting into smaller helpers; prediction semantics remain unchanged. Final validation must use the follow-up head, not the failed first build.
 
+Verified follow-up: `480e446c1586c418f9339e4a274e7b6454c48dec`, PR #4, [CI run](https://github.com/aosire/Trio/actions/runs/38576943263). Full iOS: 824 tests/113 suites including all fourteen display tests; algorithm: 226 tests/32 suites including fourteen parity cases. Both jobs passed. These counts overlap; existing upstream exclusions remain unchanged.
+
 Preserve the distinction between this scenario range and alarm/dosing prediction selection when merging upstream. Revert the feature commits to remove the display; no settings/data migration or driver rollback is required. No release, signing change or live pump test is part of this work.
