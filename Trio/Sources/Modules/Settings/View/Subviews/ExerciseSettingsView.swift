@@ -117,7 +117,7 @@ struct ExerciseSettingsView: View {
         Section {
             Text(String(localized: "In Shortcuts, create an Apple Watch Workout start automation for Walking or Elliptical. Add Trio’s Start exercise session action and choose the matching activity. Walking may include outdoor walks; check the available trigger options. Save your configuration here first. To run without a prompt, explicitly disable Confirm before applying preset in that action and choose Run Immediately in the automation.", table: "Exercise"))
             Text(String(localized: "The time limit is the fallback if an end event is missed. For an end automation, save the identifier returned by Start and pass that exact identifier to End exercise session. Never use Cancel override as the workout-end action; it could stop a newer adjustment. Workout-type options and locked-phone delivery must be checked on your devices.", table: "Exercise"))
-            Link(String(localized: "Apple’s workout automation guide", table: "Exercise"), destination: URL(string: "https://support.apple.com/en-gb/guide/shortcuts/apd932ff833f/ios")!)
+            SwiftUI.Link(String(localized: "Apple’s workout automation guide", table: "Exercise"), destination: URL(string: "https://support.apple.com/en-gb/guide/shortcuts/apd932ff833f/ios")!)
         } header: { Text(String(localized: "Apple Watch Workout", table: "Exercise")) }
         .font(.footnote)
     }

@@ -2,6 +2,8 @@
 
 Base: forecast PR #4 head `480e446c1586c418f9339e4a274e7b6454c48dec`, stacked after chart PR #3 and rooted in merged fork `2eb1a73354bc10667b5c26bffad170b5206bfd81`. Upstream remains `1bacd86fb19dc325dff044b8cfe52fb7da6c8b98`. Branch: `codex/exercise-mode`.
 
+PR: https://github.com/aosire/Trio/pull/5. Initial CI head `b259a5a49fa662a5194c076cb5403791dd6f1d72` passed 226 algorithm tests including 14 golden cases, but failed the iOS build because this project defines a `Link` view modifier that shadows `SwiftUI.Link`. Qualifying the guide link fixes that name collision; full tests must run on the repaired head before readiness.
+
 ## User behavior
 
 Home's Exercise button and Settings > Features > Exercise open the same configuration/history. Logging only is the default. Choose an existing override preset, a time limit (up to four hours), and explicitly enable preset application to use exercise mode. Save before starting. Changes affect future sessions, not an active session's expiry. The UI shows the selected preset's percentage, target and SMB-off flag and directs the user to review its full settings in Adjustments. No clinical percentage/target is chosen by this feature. An override percentage is not a hard cap on insulin.
