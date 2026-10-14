@@ -343,4 +343,3 @@ jobs:
             echo "- DerivedData size (post-trim): \`${dd_size}\`"
             echo "- CompilationCache.noindex size: \`${cc_size}\` (grows across runs as the Xcode 26 cache warms up)"
           } >> "$GITHUB_STEP_SUMMARY"
-
