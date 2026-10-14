@@ -818,7 +818,7 @@ extension Home.RootView {
                         state: state.bolusCancellationState,
                         progress: state.bolusProgress,
                         total: state.lastPumpBolus?.bolus?.amount as Decimal?,
-                        retry: { state.cancelBolus() },
+                        retry: { state.retryBolusCancellation() },
                         dismiss: { state.dismissBolusCancellationResult() }
                     )
                     .padding(.horizontal, 10)

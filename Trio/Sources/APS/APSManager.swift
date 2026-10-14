@@ -25,6 +25,7 @@ protocol APSManager {
     var bolusProgress: CurrentValueSubject<Decimal?, Never> { get }
     var bolusCancellationState: CurrentValueSubject<BolusCancellationState, Never> { get }
     @MainActor func requestBolusCancellation()
+    @MainActor func retryBolusCancellation()
     @MainActor func dismissBolusCancellationResult()
     var pumpExpiresAtDate: CurrentValueSubject<Date?, Never> { get }
     var pumpActivatedAtDate: CurrentValueSubject<Date?, Never> { get }
@@ -733,6 +734,10 @@ final class BaseAPSManager: APSManager, Injectable {
 
     @MainActor func requestBolusCancellation() {
         beginBolusCancellation()
+    }
+
+    @MainActor func retryBolusCancellation() {
+        bolusCancellation.retryLastRequest()
     }
 
     @MainActor func dismissBolusCancellationResult() {

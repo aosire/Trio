@@ -69,6 +69,7 @@ final class BolusCancellationCoordinator {
     let state = CurrentValueSubject<BolusCancellationState, Never>(.idle)
     @MainActor private(set) var activeTask: Task<Outcome, Never>?
     @MainActor private var requestID: UUID?
+    @MainActor private var retryRequest: (@MainActor () -> Task<Outcome, Never>?)?
 
     @MainActor @discardableResult func request(
         mayCancel: @escaping @MainActor () -> Bool,
@@ -82,6 +83,14 @@ final class BolusCancellationCoordinator {
     ) -> Task<Outcome, Never> {
         if let activeTask { return activeTask }
 
+        retryRequest = nil
+        let retryOriginal: @MainActor () -> Task<Outcome, Never>? = { [weak self] in
+            self?.request(
+                mayCancel: mayCancel, cancel: cancel, shouldRetry: shouldRetry,
+                maxAttempts: maxAttempts, retryDelay: retryDelay, warningDelay: warningDelay,
+                onUnconfirmed: onUnconfirmed, onCompletion: onCompletion
+            )
+        }
         let id = UUID()
         requestID = id
         let task = Task { @MainActor in
@@ -118,6 +127,7 @@ final class BolusCancellationCoordinator {
             }
 
             self.requestID = nil
+            if case .failure = outcome { self.retryRequest = retryOriginal }
             // Complete side effects before publishing a terminal state that can
             // synchronously cause a subscriber to start another request.
             onCompletion(outcome)
@@ -137,7 +147,15 @@ final class BolusCancellationCoordinator {
 
     @MainActor func dismissResult() {
         guard activeTask == nil else { return }
+        retryRequest = nil
         state.send(.idle)
+    }
+
+    /// An explicit Retry must keep the original context too. Capturing the pump
+    /// again here could stop a later dose after the original request failed.
+    @MainActor @discardableResult func retryLastRequest() -> Task<Outcome, Never>? {
+        if let activeTask { return activeTask }
+        return retryRequest?()
     }
 
     /// Omnipod's driver resolves its pending stop command before another attempt.

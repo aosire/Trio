@@ -579,7 +579,7 @@ extension Treatments {
                         state: state.bolusCancellationState,
                         progress: state.bolusProgress,
                         total: state.lastPumpBolus?.bolus?.amount as Decimal?,
-                        retry: { state.cancelBolus() },
+                        retry: { state.retryBolusCancellation() },
                         dismiss: { state.dismissBolusCancellationResult() }
                     )
                     .listRowBackground(Color.clear)

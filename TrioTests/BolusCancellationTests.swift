@@ -116,6 +116,7 @@ import Testing
         coordinator.dismissResult()
         #expect(coordinator.state.value == .idle)
         #expect(calls == 3, "Dismissing a warning must not send a pump command")
+        #expect(coordinator.retryLastRequest() == nil, "An old Retry control must not survive dismissal or a new bolus")
     }
 
     @Test("Configuration/state failures do not retry") func doesNotRetryRejectedStop() async {
@@ -220,14 +221,36 @@ import Testing
 
     @Test("A failed stop can be explicitly retried") func manualRetryAfterFailure() async {
         let coordinator = BolusCancellationCoordinator()
-        let first = coordinator.request(mayCancel: { true }, cancel: { throw TestError.rejected }, shouldRetry: { _ in false })
+        var rejects = true
+        let first = coordinator.request(mayCancel: { true }, cancel: {
+            if rejects { throw TestError.rejected }
+        }, shouldRetry: { _ in false })
         _ = await first.value
-        let retry = coordinator.request(mayCancel: { true }, cancel: {}, shouldRetry: { _ in false })
+        rejects = false
+        let retry = coordinator.retryLastRequest()
+        #expect(retry != nil)
         #expect(coordinator.state.value == .cancelling)
-        _ = await retry.value
+        _ = await retry?.value
         #expect(coordinator.state.value == .stopped)
         coordinator.dismissResult()
         #expect(coordinator.state.value == .idle)
+    }
+
+    @Test("The visible Retry action retains the original bolus context") func manualRetryCannotRetarget() async {
+        let coordinator = BolusCancellationCoordinator()
+        var isOriginal = true
+        var calls = 0
+        let first = coordinator.request(mayCancel: { isOriginal }, cancel: {
+            calls += 1
+            throw TestError.rejected
+        }, shouldRetry: { _ in false })
+        _ = await first.value
+        isOriginal = false
+        let retry = coordinator.retryLastRequest()
+        #expect(retry != nil)
+        _ = await retry?.value
+        #expect(calls == 1, "A later bolus must not receive the old Retry request")
+        if case .failed = coordinator.state.value {} else { Issue.record("Changed context should remain unconfirmed") }
     }
 
     @Test("Only verified communication/connection errors opt into Omnipod retries") func retryPolicy() {

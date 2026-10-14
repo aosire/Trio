@@ -842,6 +842,11 @@ extension Home {
             bolusCancellationState = apsManager.bolusCancellationState.value
         }
 
+        @MainActor func retryBolusCancellation() {
+            apsManager.retryBolusCancellation()
+            bolusCancellationState = apsManager.bolusCancellationState.value
+        }
+
         private func setupPumpSettings() async {
             let settings = await provider.pumpSettings()
             await MainActor.run {
