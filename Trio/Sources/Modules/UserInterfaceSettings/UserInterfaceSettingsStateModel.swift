@@ -9,6 +9,9 @@ extension UserInterfaceSettings {
         @Published var rulerMarks: Bool = true
         @Published var bolusDisplayThreshold: BolusDisplayThreshold = .allUnits
         @Published var forecastDisplayType: ForecastDisplayType = .cone
+        @Published var useFixedGlucoseChartBounds = false
+        @Published var glucoseChartMinimum: Decimal = 40
+        @Published var glucoseChartMaximum: Decimal = 250
         @Published var showCarbsRequiredBadge: Bool = true
         @Published var carbsRequiredThreshold: Decimal = 0
         @Published var glucoseColorScheme: GlucoseColorScheme = .dynamicColor
@@ -23,6 +26,9 @@ extension UserInterfaceSettings {
         override func subscribe() {
             let units = settingsManager.settings.units
             self.units = units
+            glucoseChartMinimum = settingsManager.settings.glucoseChartMinimum
+            glucoseChartMaximum = settingsManager.settings.glucoseChartMaximum
+            subscribeSetting(\.useFixedGlucoseChartBounds, on: $useFixedGlucoseChartBounds) { useFixedGlucoseChartBounds = $0 }
 
             subscribeSetting(\.xGridLines, on: $xGridLines) { xGridLines = $0 }
             subscribeSetting(\.yGridLines, on: $yGridLines) { yGridLines = $0 }
@@ -53,6 +59,18 @@ extension UserInterfaceSettings {
                 requireAdjustmentsConfirmation = $0 }
 
             Task { await getCurrentGlucoseTarget() }
+        }
+
+        /// Commit the pair together; editing an invalid draft cannot affect the chart.
+        func saveChartBounds(minimum: Decimal, maximum: Decimal) -> Bool {
+            guard GlucoseChartBounds(minimum: minimum, maximum: maximum) != nil else { return false }
+            var settings = settingsManager.settings
+            settings.glucoseChartMinimum = minimum
+            settings.glucoseChartMaximum = maximum
+            settingsManager.settings = settings
+            glucoseChartMinimum = minimum
+            glucoseChartMaximum = maximum
+            return true
         }
 
         /// Resolves the glucose target active right now from the BG target schedule.

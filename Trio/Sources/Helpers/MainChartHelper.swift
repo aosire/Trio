@@ -194,12 +194,16 @@ extension MainChartCanvas {
                 glucoseColorScheme: glucoseColorScheme
             )
 
+            if state.fixedGlucoseChartBounds?.range.contains(highGlucose) ?? true {
             RuleMark(y: .value("High", units == .mgdL ? highGlucose : highGlucose.asMmolL))
                 .foregroundStyle(highColor)
                 .lineStyle(.init(lineWidth: 1, dash: [5]))
+            }
+            if state.fixedGlucoseChartBounds?.range.contains(lowGlucose) ?? true {
             RuleMark(y: .value("Low", units == .mgdL ? lowGlucose : lowGlucose.asMmolL))
                 .foregroundStyle(lowColor)
                 .lineStyle(.init(lineWidth: 1, dash: [5]))
+            }
         }
     }
 
