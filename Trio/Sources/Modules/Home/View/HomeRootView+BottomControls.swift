@@ -503,6 +503,8 @@ extension Home.RootView {
                     } label: {
                         Image(systemName: "xmark.app")
                             .font(.system(size: 25))
+                            .frame(minWidth: 44, minHeight: 44)
+                            .contentShape(Rectangle())
                     }
                     .accessibilityLabel(Text("Cancel bolus"))
                 } else if state.bolusStatus == .initiating {

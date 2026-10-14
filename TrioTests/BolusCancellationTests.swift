@@ -113,6 +113,9 @@ import Testing
         #expect(calls == 3)
         if case .failed = coordinator.state.value {} else { Issue.record("Failure was hidden") }
         #expect(!coordinator.state.value.isPending)
+        coordinator.dismissResult()
+        #expect(coordinator.state.value == .idle)
+        #expect(calls == 3, "Dismissing a warning must not send a pump command")
     }
 
     @Test("Configuration/state failures do not retry") func doesNotRetryRejectedStop() async {

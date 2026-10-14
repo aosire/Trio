@@ -45,6 +45,17 @@
         }
       }
     },
+    "Dismiss" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dismiss"
+          }
+        }
+      }
+    },
     "Dismiss cancellation result" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -52,6 +63,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dismiss cancellation result"
+          }
+        }
+      }
+    },
+    "Dismiss cancellation warning" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dismiss cancellation warning"
+          }
+        }
+      }
+    },
+    "Dismissing this warning does not stop insulin." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dismissing this warning does not stop insulin."
           }
         }
       }
@@ -118,6 +151,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Retrying cancellation…"
+          }
+        }
+      }
+    },
+    "Stop not confirmed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stop not confirmed"
           }
         }
       }

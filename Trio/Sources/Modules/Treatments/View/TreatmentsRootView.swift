@@ -690,6 +690,8 @@ extension Treatments {
                         Button { state.cancelBolus() } label: {
                             Image(systemName: "xmark.app")
                                 .font(.system(size: 25))
+                                .frame(minWidth: 44, minHeight: 44)
+                                .contentShape(Rectangle())
                         }.tint(Color.tabBar)
                             .buttonStyle(.borderless)
                             .accessibilityLabel("Cancel bolus")

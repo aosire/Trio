@@ -41,7 +41,7 @@ struct BolusCancellationStatusView: View {
         case .idle: return ""
         case .cancelling: return String(localized: "Cancelling bolus…", table: "BolusCancellation")
         case .retrying: return String(localized: "Retrying cancellation…", table: "BolusCancellation")
-        case .unconfirmed, .failed: return String(localized: "Bolus stop not confirmed", table: "BolusCancellation")
+        case .unconfirmed, .failed: return String(localized: "Stop not confirmed", table: "BolusCancellation")
         case .stopped: return String(localized: "Bolus stopped", table: "BolusCancellation")
         }
     }
@@ -55,6 +55,14 @@ struct BolusCancellationStatusView: View {
         }
     }
 
+    private var deliveryText: String? {
+        guard state.isPending, let progress, let total else { return nil }
+        return (Formatter.decimalFormatterWithThreeFractionDigits.string(from: (progress * total) as NSNumber) ?? "")
+            + String(localized: " of ")
+            + (Formatter.decimalFormatterWithThreeFractionDigits.string(from: total as NSNumber) ?? "")
+            + String(localized: " U")
+    }
+
     var body: some View {
         HStack(spacing: 10) {
             if state.isPending {
@@ -65,27 +73,40 @@ struct BolusCancellationStatusView: View {
             }
             VStack(alignment: .leading, spacing: 1) {
                 Text(title).font(.subheadline).lineLimit(1)
-                Text(detail).font(.caption2).lineLimit(1)
-                if state != .stopped, let progress, let total {
-                    Text(
-                        (Formatter.decimalFormatterWithThreeFractionDigits.string(from: (progress * total) as NSNumber) ?? "")
-                            + String(localized: " of ")
-                            + (Formatter.decimalFormatterWithThreeFractionDigits.string(from: total as NSNumber) ?? "")
-                            + String(localized: " U")
-                    )
-                    .font(.caption2)
-                    .accessibilityLabel(Text(String(localized: "Estimated bolus delivery", table: "BolusCancellation")))
+                Text(detail).font(.caption2).lineLimit(state.isPending ? 1 : 2)
+                if let deliveryText {
+                    Text(deliveryText)
+                        .font(.caption2)
+                        .accessibilityLabel(Text(String(localized: "Estimated bolus delivery", table: "BolusCancellation")))
+                        .accessibilityValue(Text(deliveryText))
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityElement(children: .combine)
 
             if case .failed = state {
-                Button(action: retry) { Image(systemName: "arrow.clockwise") }
-                    .accessibilityLabel(Text(String(localized: "Retry bolus cancellation", table: "BolusCancellation")))
-                    .accessibilityIdentifier("retryBolusCancellation")
+                Button(action: retry) {
+                    Image(systemName: "arrow.clockwise")
+                        .frame(minWidth: 44, minHeight: 44)
+                        .contentShape(Rectangle())
+                }
+                .accessibilityLabel(Text(String(localized: "Retry bolus cancellation", table: "BolusCancellation")))
+                .accessibilityIdentifier("retryBolusCancellation")
+                Button(action: dismiss) {
+                    Text(String(localized: "Dismiss", table: "BolusCancellation"))
+                        .font(.caption)
+                        .frame(minWidth: 44, minHeight: 44)
+                        .contentShape(Rectangle())
+                }
+                .accessibilityLabel(Text(String(localized: "Dismiss cancellation warning", table: "BolusCancellation")))
+                .accessibilityHint(Text(String(localized: "Dismissing this warning does not stop insulin.", table: "BolusCancellation")))
             } else if state == .stopped {
-                Button(action: dismiss) { Image(systemName: "xmark") }
-                    .accessibilityLabel(Text(String(localized: "Dismiss cancellation result", table: "BolusCancellation")))
+                Button(action: dismiss) {
+                    Image(systemName: "xmark")
+                        .frame(minWidth: 44, minHeight: 44)
+                        .contentShape(Rectangle())
+                }
+                .accessibilityLabel(Text(String(localized: "Dismiss cancellation result", table: "BolusCancellation")))
             }
         }
         .padding(.horizontal, 12)
