@@ -63,14 +63,16 @@ import Testing
     @Test("Nearby timestamps are not silently merged into one meal") func nearbyTimes() throws {
         let groups = try build([sample(), sample(.fat, start: date.addingTimeInterval(1))])
         #expect(groups.count == 2)
-        #expect(groups.allSatisfy(\.hasMissingOrInvalidValues))
+        let allUnknown = groups.allSatisfy { $0.hasMissingOrInvalidValues }
+        #expect(allUnknown)
         #expect(groups[0].id.start > groups[1].id.start)
     }
 
     @Test("Different end times stay separate and long spans remain visible") func spans() throws {
         let groups = try build([sample(), sample(.fat, end: date.addingTimeInterval(86400))])
         #expect(groups.count == 2)
-        #expect(groups.filter(\.isPointInTime).count == 1)
+        let pointCount = groups.filter { $0.isPointInTime }.count
+        #expect(pointCount == 1)
     }
 
     @Test("Duplicate sample UUIDs reject the snapshot instead of doubling amounts") func duplicateUUID() {
