@@ -69,6 +69,7 @@ extension Home {
         var errorMessage: String?
         var errorDate: Date?
         var bolusProgress: Decimal?
+        var bolusCancellationState: BolusCancellationState = .idle
         var eventualBG: Int?
         var units: GlucoseUnits = .mgdL
         var pumpDisplayState: PumpDisplayState?
@@ -665,6 +666,11 @@ extension Home {
                 .weakAssign(to: \.bolusProgress, on: self)
                 .store(in: &lifetime)
 
+            apsManager.bolusCancellationState
+                .receive(on: DispatchQueue.main)
+                .weakAssign(to: \.bolusCancellationState, on: self)
+                .store(in: &lifetime)
+
             apsManager.pumpDisplayState
                 .receive(on: DispatchQueue.main)
                 .sink { [weak self] state in
@@ -826,13 +832,19 @@ extension Home {
                 .isGlucoseDataFresh(glucoseFromPersistence.first?.date) ? (waitForSuggestion = true) : (waitForSuggestion = false)
         }
 
-        func cancelBolus() {
-            Task {
-                await apsManager.cancelBolus(nil)
+        @MainActor func cancelBolus() {
+            apsManager.requestBolusCancellation()
+            bolusCancellationState = apsManager.bolusCancellationState.value
+        }
 
-                // perform determine basal sync, otherwise you have could end up with too much iob when opening the calculator again
-                try await apsManager.determineBasalSync()
-            }
+        @MainActor func dismissBolusCancellationResult() {
+            apsManager.dismissBolusCancellationResult()
+            bolusCancellationState = apsManager.bolusCancellationState.value
+        }
+
+        @MainActor func retryBolusCancellation() {
+            apsManager.retryBolusCancellation()
+            bolusCancellationState = apsManager.bolusCancellationState.value
         }
 
         private func setupPumpSettings() async {

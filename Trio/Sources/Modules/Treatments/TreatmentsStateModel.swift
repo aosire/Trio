@@ -200,6 +200,7 @@ extension Treatments {
         typealias PumpEvent = PumpEventStored.EventType
 
         var bolusProgress: Decimal?
+        var bolusCancellationState: BolusCancellationState = .idle
         var bolusStatus: BolusStatus = .noBolus
         var lastPumpBolus: PumpEventStored?
 
@@ -294,17 +295,30 @@ extension Treatments {
                 .weakAssign(to: \.bolusProgress, on: self)
                 .store(in: &lifetime)
 
+            apsManager.bolusCancellationState
+                .receive(on: DispatchQueue.main)
+                .weakAssign(to: \.bolusCancellationState, on: self)
+                .store(in: &lifetime)
+
             provider.deviceManager.bolusTrigger
                 .receive(on: DispatchQueue.main)
                 .weakAssign(to: \.bolusStatus, on: self)
                 .store(in: &lifetime)
         }
 
-        func cancelBolus() {
-            Task {
-                await apsManager.cancelBolus(nil)
-                try? await apsManager.determineBasalSync()
-            }
+        @MainActor func cancelBolus() {
+            apsManager.requestBolusCancellation()
+            bolusCancellationState = apsManager.bolusCancellationState.value
+        }
+
+        @MainActor func dismissBolusCancellationResult() {
+            apsManager.dismissBolusCancellationResult()
+            bolusCancellationState = apsManager.bolusCancellationState.value
+        }
+
+        @MainActor func retryBolusCancellation() {
+            apsManager.retryBolusCancellation()
+            bolusCancellationState = apsManager.bolusCancellationState.value
         }
 
         // MARK: - Basal

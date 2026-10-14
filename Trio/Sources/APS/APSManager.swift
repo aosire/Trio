@@ -3,6 +3,7 @@ import CoreData
 import Foundation
 import LoopKit
 import LoopKitUI
+import OmnipodKit
 import SwiftDate
 import Swinject
 
@@ -22,6 +23,10 @@ protocol APSManager {
     var lastLoopDate: Date { get }
     var lastLoopDateSubject: PassthroughSubject<Date, Never> { get }
     var bolusProgress: CurrentValueSubject<Decimal?, Never> { get }
+    var bolusCancellationState: CurrentValueSubject<BolusCancellationState, Never> { get }
+    @MainActor func requestBolusCancellation()
+    @MainActor func retryBolusCancellation()
+    @MainActor func dismissBolusCancellationResult()
     var pumpExpiresAtDate: CurrentValueSubject<Date?, Never> { get }
     var pumpActivatedAtDate: CurrentValueSubject<Date?, Never> { get }
     var isManualTempBasal: Bool { get }
@@ -147,6 +152,7 @@ final class BaseAPSManager: APSManager, Injectable {
     private var lifetime = Lifetime()
 
     private let loopGuard = LoopGuard()
+    private let bolusCancellation = BolusCancellationCoordinator()
     /// All reads/writes are dispatched onto `processQueue` so the bolus
     /// trigger sink, `cancelBolus`, and the `DoseProgressReporter`
     /// callback (which the pump manager already invokes on
@@ -172,6 +178,7 @@ final class BaseAPSManager: APSManager, Injectable {
     let iobFileDidUpdate = PassthroughSubject<Void, Never>()
 
     let bolusProgress = CurrentValueSubject<Decimal?, Never>(nil)
+    var bolusCancellationState: CurrentValueSubject<BolusCancellationState, Never> { bolusCancellation.state }
 
     var pumpDisplayState: CurrentValueSubject<PumpDisplayState?, Never> {
         deviceDataManager.pumpDisplayState
@@ -641,6 +648,11 @@ final class BaseAPSManager: APSManager, Injectable {
             return
         }
 
+        guard !bolusCancellationState.value.isPending else {
+            callback?(false, String(localized: "Wait for the bolus cancellation result before starting another bolus.", table: "BolusCancellation"))
+            return
+        }
+
         if let error = verifyStatus() {
             processError(error)
             // Capture broadcaster and queue before async context
@@ -660,6 +672,16 @@ final class BaseAPSManager: APSManager, Injectable {
         }
 
         let roundedAmount = pump.roundToSupportedBolusVolume(units: amount)
+
+        let mayStart = await MainActor.run {
+            guard !bolusCancellationState.value.isPending else { return false }
+            bolusCancellation.dismissResult()
+            return true
+        }
+        guard mayStart else {
+            callback?(false, String(localized: "Wait for the bolus cancellation result before starting another bolus.", table: "BolusCancellation"))
+            return
+        }
 
         debug(.apsManager, "Enact bolus \(roundedAmount), manual \(!isSMB)")
 
@@ -703,29 +725,83 @@ final class BaseAPSManager: APSManager, Injectable {
     }
 
     func cancelBolus(_ callback: ((Bool, String) -> Void)?) async {
-        guard let pump = pumpManager, pump.status.pumpStatus.bolusing else { return }
-        debug(.apsManager, "Cancel bolus")
-        do {
-            _ = try await pump.cancelBolus()
-            debug(.apsManager, "Bolus cancelled")
-            callback?(true, String(localized: "Bolus cancelled successfully.", comment: "Success message for canceling a bolus"))
-        } catch {
-            debug(.apsManager, "Bolus cancellation failed with error: \(error)")
-            lastError.send(APSError.pumpError(error))
-            issueAlertForCategory(
-                .bolusFailed,
-                title: String(localized: "Bolus cancellation failed"),
-                body: String(localized: "Try again.") + "\n\n\(error.localizedDescription)"
-            )
-            callback?(
-                false,
-                String(
-                    localized: "Error! Bolus cancellation failed with error: \(error.localizedDescription)",
-                    comment: "Error message for canceling a bolus"
-                )
+        let task = await MainActor.run { beginBolusCancellation() }
+        switch await task.value {
+        case .success: callback?(true, String(localized: "Bolus stopped", table: "BolusCancellation"))
+        case let .failure(error): callback?(false, error.localizedDescription)
+        }
+    }
+
+    @MainActor func requestBolusCancellation() {
+        beginBolusCancellation()
+    }
+
+    @MainActor func retryBolusCancellation() {
+        bolusCancellation.retryLastRequest()
+    }
+
+    @MainActor func dismissBolusCancellationResult() {
+        bolusCancellation.dismissResult()
+    }
+
+    @MainActor @discardableResult private func beginBolusCancellation() -> Task<BolusCancellationCoordinator.Outcome, Never> {
+        if let task = bolusCancellation.activeTask { return task }
+        let pump = pumpManager
+        let context = pump.map {
+            BolusCancellationContext(
+                pumpID: ObjectIdentifier($0),
+                activationDate: pumpActivatedAtDate.value,
+                bolusState: $0.status.bolusState
             )
         }
-        clearBolusReporter()
+
+        return bolusCancellation.request(
+            mayCancel: { [weak self] in
+                guard let self else { return false }
+                guard let pump, let context else { return true } // Explicit missing-pump failure below.
+                return context.matches(
+                    pumpID: self.pumpManager.map { ObjectIdentifier($0) },
+                    activationDate: self.pumpActivatedAtDate.value,
+                    bolusState: pump.status.bolusState
+                )
+            },
+            cancel: {
+                guard let pump else { throw BolusCancellationError.noPump }
+                // Do not drop an explicit request because a cached bolusing flag is false.
+                // The driver's command/session reconciliation determines the actual result.
+                _ = try await pump.cancelBolus()
+            },
+            shouldRetry: { error in
+                // Unknown dose identity gets one immediate attempt, never a delayed retry.
+                pump is OmniPumpManager && context?.doseStart != nil && BolusCancellationCoordinator.isRetryableOmnipodError(error)
+            },
+            onUnconfirmed: { [weak self] in self?.reportBolusCancellationFailure(message: nil) },
+            onCompletion: { [weak self] result in
+                guard let self else { return }
+                switch result {
+                case .success:
+                    self.clearBolusReporter()
+                    Task {
+                        do { try await self.determineBasalSync() } catch {
+                            warning(.apsManager, "Determination after bolus cancellation failed: \(error.localizedDescription)")
+                        }
+                    }
+                case let .failure(error):
+                    // Keep reporting delivery; failure is not evidence of a stopped bolus.
+                    self.lastError.send(APSError.pumpError(error))
+                    self.reportBolusCancellationFailure(message: error.localizedDescription)
+                }
+            }
+        )
+    }
+
+    private func reportBolusCancellationFailure(message: String?) {
+        issueAlertForCategory(
+            .bolusFailed,
+            title: String(localized: "Bolus stop not confirmed", table: "BolusCancellation"),
+            body: String(localized: "Insulin may still be delivering. Check the pump connection.", table: "BolusCancellation")
+                + (message.map { "\n\n\($0)" } ?? "")
+        )
     }
 
     private func fetchCurrentTempBasal(date: Date) async throws -> TempBasal {
@@ -834,6 +910,14 @@ final class BaseAPSManager: APSManager, Injectable {
     }
 
     private func performBolus(pump: PumpManager, smbToDeliver: NSDecimalNumber) async throws {
+        let mayStart = await MainActor.run {
+            guard !bolusCancellationState.value.isPending else { return false }
+            bolusCancellation.dismissResult()
+            return true
+        }
+        guard mayStart else {
+            throw APSError.invalidPumpState(message: String(localized: "Wait for the bolus cancellation result before starting another bolus.", table: "BolusCancellation"))
+        }
         try await pump.enactBolus(units: smbToDeliver.decimalValue.nearestDouble, automatic: true)
         bolusProgress.send(0)
     }
@@ -1470,7 +1554,7 @@ private extension PumpManager {
                     continuation.resume(returning: dose)
                 case let .failure(error):
                     debug(.apsManager, "Cancel Bolus failed")
-                    continuation.resume(throwing: APSError.pumpError(error))
+                    continuation.resume(throwing: error)
                 }
             }
         }

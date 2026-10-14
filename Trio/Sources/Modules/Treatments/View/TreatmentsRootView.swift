@@ -574,7 +574,17 @@ extension Treatments {
             }
 
             return Section {
-                if shouldDisplayBolusProgress {
+                if state.bolusCancellationState != .idle {
+                    BolusCancellationStatusView(
+                        state: state.bolusCancellationState,
+                        progress: state.bolusProgress,
+                        total: state.lastPumpBolus?.bolus?.amount as Decimal?,
+                        retry: { state.retryBolusCancellation() },
+                        dismiss: { state.dismissBolusCancellationResult() }
+                    )
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10))
+                } else if shouldDisplayBolusProgress {
                     bolusInProgressView
                         .listRowBackground(Color.clear)
                         .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
@@ -680,6 +690,8 @@ extension Treatments {
                         Button { state.cancelBolus() } label: {
                             Image(systemName: "xmark.app")
                                 .font(.system(size: 25))
+                                .frame(minWidth: 44, minHeight: 44)
+                                .contentShape(Rectangle())
                         }.tint(Color.tabBar)
                             .buttonStyle(.borderless)
                             .accessibilityLabel("Cancel bolus")
@@ -771,7 +783,7 @@ extension Treatments {
         }
 
         private var disableTaskButton: Bool {
-            bolusInProgressForEntry || state.addButtonPressed || limitExceeded
+            state.bolusCancellationState.isPending || bolusInProgressForEntry || state.addButtonPressed || limitExceeded
         }
     }
 

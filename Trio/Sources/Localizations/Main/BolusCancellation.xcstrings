@@ -1,0 +1,204 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Bolus stop not confirmed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bolus stop not confirmed"
+          }
+        }
+      }
+    },
+    "Bolus stopped" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bolus stopped"
+          }
+        }
+      }
+    },
+    "Cancelling bolus…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancelling bolus…"
+          }
+        }
+      }
+    },
+    "Confirmed by pump." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirmed by pump."
+          }
+        }
+      }
+    },
+    "Dismiss" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dismiss"
+          }
+        }
+      }
+    },
+    "Dismiss cancellation result" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dismiss cancellation result"
+          }
+        }
+      }
+    },
+    "Dismiss cancellation warning" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dismiss cancellation warning"
+          }
+        }
+      }
+    },
+    "Dismissing this warning does not stop insulin." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dismissing this warning does not stop insulin."
+          }
+        }
+      }
+    },
+    "Estimated bolus delivery" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimated bolus delivery"
+          }
+        }
+      }
+    },
+    "Insulin may still be delivering." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Insulin may still be delivering."
+          }
+        }
+      }
+    },
+    "Insulin may still be delivering. Check the pump connection." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Insulin may still be delivering. Check the pump connection."
+          }
+        }
+      }
+    },
+    "No pump is connected. Bolus cancellation could not be confirmed." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pump is connected. Bolus cancellation could not be confirmed."
+          }
+        }
+      }
+    },
+    "Retry bolus cancellation" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retry bolus cancellation"
+          }
+        }
+      }
+    },
+    "Retrying cancellation…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retrying cancellation…"
+          }
+        }
+      }
+    },
+    "Stop not confirmed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stop not confirmed"
+          }
+        }
+      }
+    },
+    "The pump or bolus changed. The original cancellation could not be confirmed." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The pump or bolus changed. The original cancellation could not be confirmed."
+          }
+        }
+      }
+    },
+    "Wait for the bolus cancellation result before starting another bolus." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wait for the bolus cancellation result before starting another bolus."
+          }
+        }
+      }
+    },
+    "Waiting for pump confirmation." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waiting for pump confirmation."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}
