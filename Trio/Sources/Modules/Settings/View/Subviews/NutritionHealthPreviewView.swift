@@ -27,7 +27,7 @@ struct NutritionHealthPreviewView: View {
             }
         }
         .navigationTitle(String(localized: "Cronometer Health preview", table: "NutritionPreview"))
-        .onChange(of: selectedSource) { _, _ in groups = []; offsetMinutes = 0; error = nil }
+        .onChange(of: selectedSource) { _, _ in groups = []; offsetMinutes = 0 }
     }
 
     private var introduction: some View {
@@ -67,7 +67,8 @@ struct NutritionHealthPreviewView: View {
             }
             Button(String(localized: "Reset time correction", table: "NutritionPreview")) { offsetMinutes = 0 }
         } footer: {
-            Text(String(localized: "Correction defaults to zero and changes only this preview. Negative values move sample times earlier. Date Added to Health is not exposed by the public HealthKit sample API. Refresh time is not meal time. Records cover sample dates from 48 hours ago through 24 hours ahead; all times below use the phone’s time zone.", table: "NutritionPreview"))
+            Text(String(localized: "Correction defaults to zero and changes only this preview. Negative values move sample times earlier. Date Added to Health is not exposed by the public HealthKit sample API. Refresh time is not meal time. Records cover sample dates from 48 hours ago through 24 hours ahead. Sample and preview times use the phone’s time zone; metadata is shown as provided by its source.", table: "NutritionPreview"))
+            Text(verbatim: TimeZone.current.identifier)
         }
     }
 

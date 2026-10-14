@@ -151,11 +151,11 @@
         }
       }
     },
-    "Correction defaults to zero and changes only this preview. Negative values move sample times earlier. Date Added to Health is not exposed by the public HealthKit sample API. Refresh time is not meal time. Records cover sample dates from 48 hours ago through 24 hours ahead; all times below use the phone’s time zone.": {
+    "Correction defaults to zero and changes only this preview. Negative values move sample times earlier. Date Added to Health is not exposed by the public HealthKit sample API. Refresh time is not meal time. Records cover sample dates from 48 hours ago through 24 hours ahead. Sample and preview times use the phone’s time zone; metadata is shown as provided by its source.": {
       "localizations": {
         "en": {
           "stringUnit": {
-            "value": "Correction defaults to zero and changes only this preview. Negative values move sample times earlier. Date Added to Health is not exposed by the public HealthKit sample API. Refresh time is not meal time. Records cover sample dates from 48 hours ago through 24 hours ahead; all times below use the phone’s time zone.",
+            "value": "Correction defaults to zero and changes only this preview. Negative values move sample times earlier. Date Added to Health is not exposed by the public HealthKit sample API. Refresh time is not meal time. Records cover sample dates from 48 hours ago through 24 hours ahead. Sample and preview times use the phone’s time zone; metadata is shown as provided by its source.",
             "state": "translated"
           }
         }
