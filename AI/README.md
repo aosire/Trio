@@ -21,6 +21,8 @@ This folder records the owner's requirements and the differences introduced by A
 
 ## Comparing with upstream
 
+The fifteen-minute Home forecast is documented in [FIFTEEN_MINUTE_FORECAST.md](FIFTEEN_MINUTE_FORECAST.md).
+
 Fetch first; do not merge simply to obtain a comparison:
 
 ```sh

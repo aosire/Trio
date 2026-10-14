@@ -422,6 +422,7 @@
 		8A91342A2D63D9A1007F8874 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 8A9134292D63D9A1007F8874 /* Localizable.xcstrings */; };
 		CBCA00000000000000000005 /* BolusCancellation.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = CBCA00000000000000000006 /* BolusCancellation.xcstrings */; };
 		CBCC00000000000000000003 /* GlucoseChart.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = CBCC00000000000000000004 /* GlucoseChart.xcstrings */; };
+		CBCF00000000000000000001 /* GlucoseForecast.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = CBCF00000000000000000002 /* GlucoseForecast.xcstrings */; };
 		8A91342C2D63D9A2007F8874 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 8A91342B2D63D9A2007F8874 /* InfoPlist.xcstrings */; };
 		8B759CFCF47B392BB365C251 /* BasalProfileEditorDataFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67F94DD2853CF42BA4E30616 /* BasalProfileEditorDataFlow.swift */; };
 		9702FF92A09C53942F20D7EA /* TargetsEditorRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DD795BA46B193644D48138C /* TargetsEditorRootView.swift */; };
@@ -1510,6 +1511,7 @@
 		8A9134292D63D9A1007F8874 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		CBCA00000000000000000006 /* BolusCancellation.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = BolusCancellation.xcstrings; sourceTree = "<group>"; };
 		CBCC00000000000000000004 /* GlucoseChart.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = GlucoseChart.xcstrings; sourceTree = "<group>"; };
+		CBCF00000000000000000002 /* GlucoseForecast.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = GlucoseForecast.xcstrings; sourceTree = "<group>"; };
 		8A91342B2D63D9A2007F8874 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 		91711E7CA54747EFAD6540EE /* QuickPickTreatmentsConfigStateModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickPickTreatmentsConfigStateModel.swift; sourceTree = "<group>"; };
 		920DDB21E5D0EB813197500D /* ConfigEditorRootView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ConfigEditorRootView.swift; sourceTree = "<group>"; };
@@ -2338,6 +2340,7 @@
 				8A9134292D63D9A1007F8874 /* Localizable.xcstrings */,
 				CBCA00000000000000000006 /* BolusCancellation.xcstrings */,
 				CBCC00000000000000000004 /* GlucoseChart.xcstrings */,
+				CBCF00000000000000000002 /* GlucoseForecast.xcstrings */,
 			);
 			path = Main;
 			sourceTree = "<group>";
@@ -5067,6 +5070,7 @@
 				8A91342A2D63D9A1007F8874 /* Localizable.xcstrings in Resources */,
 				CBCA00000000000000000005 /* BolusCancellation.xcstrings in Resources */,
 				CBCC00000000000000000003 /* GlucoseChart.xcstrings in Resources */,
+				CBCF00000000000000000001 /* GlucoseForecast.xcstrings in Resources */,
 				CAF200000000000000000000 /* Trio/Resources/Sounds/alarm.caf in Resources */,
 				CAF200000000000000000001 /* Trio/Resources/Sounds/bloom.caf in Resources */,
 				CAF200000000000000000002 /* Trio/Resources/Sounds/bloop.caf in Resources */,

@@ -67,6 +67,15 @@ Record changes in chronological order. Include upstream syncs and conflict resol
 - **Upstream / reversal:** Focused presentation/settings patch with unchanged driver/dependency ancestry. Revert feature commits to restore previous behavior; older versions ignore added settings keys.
 - **Distribution:** Separate PR only; no merge, release dispatch, signing change or live pump test.
 
+## 2026-10-14 — Fifteen-minute Home glucose forecast
+
+- **Request / base:** Continue remaining features after the owner's PR #2 merge. Stacked on chart PR #3 head `7b27e35805df622f3622cf4f180e502430b12d06`, rooted in fork `2eb1a73354bc10667b5c26bffad170b5206bfd81`; upstream `1bacd86fb19dc325dff044b8cfe52fb7da6c8b98`; branch `codex/fifteen-minute-glucose`. When stacking, resolved project/map insertion conflicts by retaining both independent catalogs/registrations and both architecture records. No dosing conflict.
+- **Files / behavior:** Separate display-only GlucoseForecastSnapshot beside the unchanged alarm evaluator; Home forecast preprocessing/state and right header; GlucoseForecast string catalog and resource registration; expanded ForecastedGlucoseEvaluatorTests with a separate 14-test display suite; this log, README/map and `AI/FIFTEEN_MINUTE_FORECAST.md`. Display range targets now plus fifteen minutes, interpolates indexed samples, shows age, and suppresses invalid/stale data.
+- **Safety:** No dosing/low-alarm selection changes, mutated prediction data, pump commands, driver updates or new therapy settings. The scenario range is explicitly not a confidence interval.
+- **Verification:** Fourteen regressions cover timing, scenario ranges, missing/corrupt samples, freshness, DST, formatting and immutability. Local whitespace/catalog/project checks precede publication; final exact-head algorithm/iOS CI results are recorded in the PR after log inspection. Windows cannot run Swift/Xcode.
+- **Limits / upstream / reversal:** Home only. Actual layout, larger text and VoiceOver need visual/device checks. Keep the display selector separate from dosing/alarm reduction on upstream merges; revert feature commits with no migration.
+- **Distribution:** Separate PR; no feature merge, release dispatch, signing change or live pump test.
+
 ## Entry template
 
 For each subsequent change, record: date/title; request; fork base and upstream SHA; branch/commit/PR; files; before/after behavior; safety impact; tests/checks and exact results; unverified limitations; upstream merge/conflict considerations; reversal approach; and any explicitly requested distribution action and its result.
