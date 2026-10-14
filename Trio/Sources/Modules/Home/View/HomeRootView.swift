@@ -231,8 +231,10 @@ extension Home {
                         BluetoothRequiredView()
                     } else {
                         HStack(alignment: .center, spacing: 0) {
-                            pumpView
-                                .frame(maxWidth: .infinity, alignment: .leading)
+                            VStack(alignment: .leading, spacing: 2) {
+                                pumpView
+                                ExerciseHomeButton(resolver: resolver, timerDate: state.timerDate)
+                            }.frame(maxWidth: .infinity, alignment: .leading)
 
                             glucoseView
                                 .frame(width: 130)

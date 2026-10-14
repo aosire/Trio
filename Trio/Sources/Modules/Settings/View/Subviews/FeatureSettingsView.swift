@@ -23,6 +23,9 @@ struct FeatureSettingsView: BaseView {
                 content: {
                     Text("Treatments").navigationLink(to: .treatmentsSettings, from: self)
                     Text("Shortcuts").navigationLink(to: .shortcutsConfig, from: self)
+                    NavigationLink(destination: ExerciseSettingsView(resolver: resolver)) {
+                        Text(String(localized: "Exercise", table: "Exercise"))
+                    }
                     Text("Remote Control").navigationLink(to: .remoteControlConfig, from: self)
                 }
             )
