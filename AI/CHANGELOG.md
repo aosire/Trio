@@ -100,3 +100,15 @@ Record changes in chronological order. Include upstream syncs and conflict resol
 ## Entry template
 
 For each subsequent change, record: date/title; request; fork base and upstream SHA; branch/commit/PR; files; before/after behavior; safety impact; tests/checks and exact results; unverified limitations; upstream merge/conflict considerations; reversal approach; and any explicitly requested distribution action and its result.
+
+## 2026-10-15 — Integrate all merged feature PRs into dev
+
+- **Request:** Repair PRs #4–#6 having been merged into feature branches and place all changes on the fork dev branch. Clarify the fixed-chart settings location.
+- **Base / upstream:** Fork dev `855fa3cdddb84714e8cc23a4a45e5caf7f031ae2`; freshly fetched upstream dev `1bacd86fb19dc325dff044b8cfe52fb7da6c8b98`. No upstream merge or dependency update.
+- **Branch / ancestry:** `codex/integrate-features-dev`; merge the heads of `codex/fixed-glucose-chart` (PR #4 merge), `codex/fifteen-minute-glucose` (PR #5 merge), and `codex/exercise-mode` (PR #6 merge) into current dev without rewriting history. All merges are conflict-free.
+- **Files / behavior:** Bring the existing fifteen-minute Home forecast, exercise logging/bounded preset sessions and read-only Cronometer Health preview to dev. Application and test trees match the previously tested Cronometer head `8e3ddc14de002479bb2b6cb4276d40d96ff567d4`. Correct the fixed-chart guide to Settings > Features > User Interface > Glucose chart scale. No new runtime edits or release-workflow changes.
+- **Safety impact:** Preserve the existing feature guards, cancellation behavior, preset ownership/expiry, source-selection/read-only Health preview and dosing boundaries. Cronometer remains a preview and does not import meals. No pump/driver/dependency pins change.
+- **Verification:** Before advancing dev, run both existing GitHub Actions test jobs on the exact integration head and inspect logs. Local whitespace, ancestry, source-tree identity and dependency-pin checks are required. Test results and exact commit/run links will be recorded in a subsequent documentation-only commit after completion.
+- **Limitations:** No local Xcode, physical-device layout/Health permissions/Watch automation verification or live-pump tests. Existing upstream test exclusions remain unchanged.
+- **Upstream / reversal:** All feature and fork ancestry is retained, with no conflicts resolved or force pushes. A future upstream sync may still require conflict resolution. Reverse runtime integration with a reviewed revert of the integration merge relative to its dev parent; retain the exercise expiry/ownership rollback guidance.
+- **Distribution:** User authorized advancing dev. No TestFlight build/release dispatch, signing change or live pump interaction is included; installed build 23 remains unchanged.
