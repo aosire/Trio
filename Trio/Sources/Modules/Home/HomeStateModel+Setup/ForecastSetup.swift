@@ -3,14 +3,12 @@ import Foundation
 
 extension Home.StateModel {
     // Asynchronously preprocess Forecast data in a background thread
-    func preprocessForecastData() async -> [(
+    func preprocessForecastData(for determinationID: NSManagedObjectID?) async -> [(
         id: UUID, forecastID: NSManagedObjectID, forecastValueIDs: [NSManagedObjectID]
     )] {
         do {
             // Get the Determination ID on the main context
-            guard let determination = await viewContext.perform({
-                self.enactedAndNonEnactedDeterminations.first
-            }) else {
+            guard let determinationID else {
                 debug(.default, "No determination found for forecast preprocessing")
                 return []
             }
@@ -20,7 +18,7 @@ extension Home.StateModel {
 
             // Fetch complete forecast hierarchy with prefetched values
             return try await determinationStorage.fetchForecastHierarchy(
-                for: determination.objectID,
+                for: determinationID,
                 in: taskContext
             )
         } catch {
@@ -37,12 +35,16 @@ extension Home.StateModel {
     // Runs inside `forecastUpdateTask`; cancellation is checked after every suspension
     // point so a superseded run cannot overwrite fresher results.
     @MainActor func updateForecastData() async {
-        let forecastDataIDs = await preprocessForecastData()
+        let determinationID = enactedAndNonEnactedDeterminations.first?.objectID
+        let origin = enactedAndNonEnactedDeterminations.first?.deliverAt
+        glucoseForecastSnapshot = nil
+        let forecastDataIDs = await preprocessForecastData(for: determinationID)
 
-        guard !Task.isCancelled else { return }
+        guard !Task.isCancelled, enactedAndNonEnactedDeterminations.first?.objectID == determinationID else { return }
 
         var allForecastValues = [[Int]]()
         var preprocessedData = [(id: UUID, forecast: Forecast, forecastValue: ForecastValue)]()
+        var snapshotCurves: [String: [GlucoseForecastSnapshot.Sample]] = [:]
 
         // Prefetch all Forecasts with their forecastValues into viewContext in a single IN-query
         // to avoid N+1 individual SELECTs when materializing via existingObject below.
@@ -65,6 +67,11 @@ extension Home.StateModel {
                 // Extract values for graph
                 let forecastValueInts = values.map { Int($0.value) }
                 allForecastValues.append(forecastValueInts)
+                if let type = forecast.type?.lowercased() {
+                    snapshotCurves[type, default: []].append(contentsOf: values.map {
+                        GlucoseForecastSnapshot.Sample(index: Int($0.index), value: Int($0.value))
+                    })
+                }
 
                 // Add data for further processing
                 preprocessedData.append(contentsOf: values.map {
@@ -75,6 +82,7 @@ extension Home.StateModel {
 
         // Update UI-relevant data
         self.preprocessedData = preprocessedData
+        glucoseForecastSnapshot = origin.map { GlucoseForecastSnapshot(origin: $0, curves: snapshotCurves) }
 
         guard !allForecastValues.isEmpty else {
             minForecast = []

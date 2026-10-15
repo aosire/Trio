@@ -11,6 +11,7 @@ extension Adjustments {
         @ObservationIgnored @Injected() var tempTargetStorage: TempTargetsStorage!
         @ObservationIgnored @Injected() var apsManager: APSManager!
         @ObservationIgnored @Injected() var overrideStorage: OverrideStorage!
+        @ObservationIgnored @Injected() var adjustmentManager: AdjustmentManager!
         @ObservationIgnored @Injected() var nightscoutManager: NightscoutManager!
 
         var requireAdjustmentsConfirmation: Bool = false

@@ -9,18 +9,9 @@ extension Adjustments.StateModel {
     /// Enacts an Override Preset by enabling it and disabling others.
     @MainActor func enactOverridePreset(withID id: NSManagedObjectID) async {
         do {
-            guard let overrideToEnact = try viewContext.existingObject(with: id) as? OverrideStored else { return }
-            /// Wait for currently active override to be disabled before storing the new one
-            await disableAllActiveOverrides(createOverrideRunEntry: currentActiveOverride != nil)
+            try await adjustmentManager.activateOverride(.objectID(id), source: .app)
             await resetStateVariables()
-
-            overrideToEnact.enabled = true
-            overrideToEnact.date = Date()
-            overrideToEnact.isUploadedToNS = false
             isOverrideEnabled = true
-
-            guard viewContext.hasChanges else { return }
-            try viewContext.save()
 
             updateLatestOverrideConfiguration()
         } catch {
@@ -30,50 +21,18 @@ extension Adjustments.StateModel {
 
     // MARK: - Disable Overrides
 
-    /// Disables all active Overrides, optionally creating a run entry.
+    /// Uses the shared writer to end active rows and record each one. The legacy
+    /// flag remains in the call surface; cleanup preserves an expected active row.
     @MainActor func disableAllActiveOverrides(
         except overrideID: NSManagedObjectID? = nil,
-        createOverrideRunEntry: Bool
+        createOverrideRunEntry _: Bool
     ) async {
         do {
-            // Get ALL NSManagedObject IDs of ALL active Override to cancel every single Override
-            let ids = try await overrideStorage.loadLatestOverrideConfigurations(fetchLimit: 0)
-
-            try await viewContext.perform {
-                // Fetch the existing OverrideStored objects from the context
-                let results = try ids.compactMap { id in
-                    try self.viewContext.existingObject(with: id) as? OverrideStored
-                }
-                guard !results.isEmpty else { return }
-
-                // Check if we also need to create a corresponding OverrideRunStored entry
-                if createOverrideRunEntry {
-                    // Use the first override to create a new OverrideRunStored entry
-                    if let canceledOverride = results.first {
-                        let newOverrideRunStored = OverrideRunStored(context: self.viewContext)
-                        newOverrideRunStored.id = UUID()
-                        newOverrideRunStored.name = canceledOverride.name
-                        newOverrideRunStored.startDate = canceledOverride.date ?? .distantPast
-                        newOverrideRunStored.endDate = Date()
-                        newOverrideRunStored.target = NSDecimalNumber(
-                            decimal: self.overrideStorage.calculateTarget(override: canceledOverride)
-                        )
-                        newOverrideRunStored.override = canceledOverride
-                        newOverrideRunStored.isUploadedToNS = false
-                    }
-                }
-
-                // Disable all overrides except the one with overrideID
-                for overrideToCancel in results where overrideToCancel.objectID != overrideID {
-                    overrideToCancel.enabled = false
-                }
-
-                if self.viewContext.hasChanges {
-                    // Save changes and update the View
-                    try self.viewContext.save()
-                    self.updateLatestOverrideConfiguration()
-                }
-            }
+            if let overrideID { try await adjustmentManager.keepOnlyOverrideIfActive(overrideID, source: .app) }
+            else { try await adjustmentManager.cancelOverride(source: .app) }
+            updateLatestOverrideConfiguration()
+        } catch AdjustmentError.nothingActive {
+            updateLatestOverrideConfiguration()
         } catch {
             debug(
                 .default,
@@ -110,11 +69,8 @@ extension Adjustments.StateModel {
                 uamMinutes: uamMinutes
             )
 
-            // First disable all Overrides
-            await disableAllActiveOverrides(createOverrideRunEntry: true)
-
-            // Then save and activate a new custom Override
-            try await overrideStorage.storeOverride(override: override)
+            // One transaction with all other app, exercise and intent activations.
+            try await adjustmentManager.activateCustomOverride(override, source: .app)
 
             // Reset State variables
             await resetStateVariables()

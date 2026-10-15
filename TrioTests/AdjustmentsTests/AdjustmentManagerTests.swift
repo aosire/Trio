@@ -34,9 +34,165 @@ import Testing
 
     // MARK: - Resolution
 
+    @Test("Exercise copies all preset therapy fields with a bounded independent identity") func exerciseCopy() async throws {
+        let presetID = await makeOverride(name: "Exercise preset", enabled: false, date: Date(), duration: 120, indefinite: true)
+        try await testContext.perform {
+            let row = try self.testContext.existingObject(with: presetID) as! OverrideStored
+            row.percentage = 80
+            row.target = 150
+            row.smbIsOff = true
+            row.advancedSettings = true
+            row.isfAndCr = true
+            row.isf = true
+            row.cr = true
+            row.smbMinutes = 15
+            row.uamMinutes = 20
+            row.smbIsScheduledOff = true
+            row.start = 8
+            row.end = 20
+            try self.testContext.save()
+        }
+        let identity = ExerciseOverrideIdentity(sessionID: UUID(), startedAt: Date())
+        try await manager.activateExerciseOverride(.objectID(presetID), identity: identity, durationMinutes: 30, activity: "Indoor walk", source: .app)
+        try await testContext.perform {
+            let original = try self.testContext.existingObject(with: presetID) as! OverrideStored
+            let request: NSFetchRequest<OverrideStored> = OverrideStored.fetchRequest()
+            request.predicate = NSPredicate(format: "id == %@", identity.storedID)
+            let copy = try #require(self.testContext.fetch(request).first)
+            #expect(original.isPreset && original.indefinite)
+            #expect(original.duration == 120)
+            #expect(!copy.isPreset && !copy.indefinite && copy.enabled)
+            #expect(copy.duration == 30)
+            #expect(copy.date == identity.startedAt)
+            #expect(copy.overrideRun == nil)
+            for key in ["percentage", "target", "smbIsOff", "advancedSettings", "isfAndCr", "isf", "cr", "smbMinutes", "uamMinutes", "smbIsScheduledOff", "start", "end"] {
+                let originalValue = original.value(forKey: key) as? NSObject
+                let copiedValue = copy.value(forKey: key) as? NSObject
+                #expect(originalValue == copiedValue, "Preset field \(key) must be copied exactly")
+            }
+        }
+    }
+
+    @Test("Ending the owned exercise override records its run exactly once") func exerciseEnd() async throws {
+        await makeOverride(name: "Preset", enabled: false, date: Date())
+        let identity = ExerciseOverrideIdentity(sessionID: UUID(), startedAt: Date())
+        try await manager.activateExerciseOverride(.presetName("Preset"), identity: identity, durationMinutes: 30, activity: "Elliptical", source: .shortcut)
+        #expect(try await manager.isExerciseOverrideActive(identity))
+        #expect(try await manager.cancelExerciseOverride(identity, source: .shortcut))
+        #expect(!(try await manager.cancelExerciseOverride(identity, source: .shortcut)))
+        #expect(try await overrideRuns().count == 1)
+        #expect(try await overrides().filter(\.enabled).isEmpty)
+    }
+
+    @Test("Exercise end preserves a newer manual preset and writes no extra history") func exerciseEndAfterReplacement() async throws {
+        await makeOverride(name: "Exercise preset", enabled: false, date: Date())
+        await makeOverride(name: "Manual", enabled: false, date: Date())
+        let identity = ExerciseOverrideIdentity(sessionID: UUID(), startedAt: Date())
+        try await manager.activateExerciseOverride(.presetName("Exercise preset"), identity: identity, durationMinutes: 30, activity: "Walk", source: .shortcut)
+        try await manager.activateOverride(.presetName("Manual"), source: .app)
+        let count = try await overrideRuns().count
+        #expect(!(try await manager.cancelExerciseOverride(identity, source: .shortcut)))
+        #expect(try await overrides().first(where: { $0.name == "Manual" })?.enabled == true)
+        #expect(try await overrideRuns().count == count)
+    }
+
+    @Test("Duplicate exercise identity and missing preset leave the active adjustment untouched") func exerciseDuplicateIsAtomic() async throws {
+        await makeOverride(name: "Preset", enabled: false, date: Date())
+        let identity = ExerciseOverrideIdentity(sessionID: UUID(), startedAt: Date())
+        try await manager.activateExerciseOverride(.presetName("Preset"), identity: identity, durationMinutes: 30, activity: "Walk", source: .shortcut)
+        await #expect(throws: ExerciseError.self) {
+            try await manager.activateExerciseOverride(.presetName("Preset"), identity: identity, durationMinutes: 60, activity: "Walk", source: .shortcut)
+        }
+        await #expect(throws: AdjustmentError.self) {
+            try await manager.activateExerciseOverride(.presetName("Missing"), identity: .init(sessionID: UUID(), startedAt: Date()), durationMinutes: 30, activity: "Walk", source: .shortcut)
+        }
+        #expect(try await manager.isExerciseOverrideActive(identity))
+        #expect(try await overrideRuns().isEmpty)
+    }
+
+    @Test("Expired exercise rows are excluded at the real OpenAPS input boundary") func exerciseDosingBoundary() async throws {
+        let objectID = await makeOverride(name: "Synthetic exercise", enabled: true, date: Date().addingTimeInterval(-600), duration: 5, indefinite: false)
+        let identity = ExerciseOverrideIdentity(sessionID: UUID(), startedAt: Date())
+        let engine = OpenAPS(storage: resolver.resolve(FileStorage.self)!, tddStorage: resolver.resolve(TDDStorage.self)!,
+            glucoseStorage: resolver.resolve(GlucoseStorage.self)!, carbsStorage: resolver.resolve(CarbsStorage.self)!)
+        try await testContext.perform {
+            let row = try self.testContext.existingObject(with: objectID) as! OverrideStored
+            row.id = identity.storedID
+            try self.testContext.save()
+            #expect(try engine.fetchActiveOverrides(on: self.testContext).isEmpty)
+            row.id = UUID().uuidString
+            row.indefinite = true
+            try self.testContext.save()
+            #expect(try engine.fetchActiveOverrides(on: self.testContext).count == 1, "Ordinary overrides retain their existing semantics")
+            row.id = identity.storedID
+            try self.testContext.save()
+            #expect(try engine.fetchActiveOverrides(on: self.testContext).isEmpty, "An owned exercise row cannot become indefinite")
+        }
+    }
+
+    @Test("Changing a row's start invalidates an old exercise end receipt") func exerciseDateOwnership() async throws {
+        await makeOverride(name: "Preset", enabled: false, date: Date())
+        let identity = ExerciseOverrideIdentity(sessionID: UUID(), startedAt: Date())
+        try await manager.activateExerciseOverride(.presetName("Preset"), identity: identity, durationMinutes: 30, activity: "Walk", source: .app)
+        try await testContext.perform {
+            let request: NSFetchRequest<OverrideStored> = OverrideStored.fetchRequest()
+            request.predicate = NSPredicate(format: "id == %@", identity.storedID)
+            let row = try #require(self.testContext.fetch(request).first)
+            row.date = identity.startedAt.addingTimeInterval(1)
+            try self.testContext.save()
+        }
+        #expect(!(try await manager.cancelExerciseOverride(identity, source: .shortcut)))
+        #expect(try await overrides().filter(\.enabled).count == 1)
+    }
+
     @Test("Manager resolves from the service container") func testManagerResolves() {
         #expect(manager != nil, "AdjustmentManager should be registered in ServiceAssembly")
         #expect(manager is BaseAdjustmentManager, "Manager should be of type BaseAdjustmentManager")
+    }
+
+    @Test("Concurrent manual custom and exercise activations share one writer") func exerciseAndManualConcurrency() async throws {
+        await makeOverride(name: "Exercise preset", enabled: false, date: Date())
+        let stack = coreDataStack!
+        let shared = BaseAdjustmentManager(resolver: resolver, contextProvider: { stack.newTaskContext() }, recompute: {})
+        let identity = ExerciseOverrideIdentity(sessionID: UUID(), startedAt: Date())
+        let custom = Override(name: "Manual custom", enabled: true, date: Date(), duration: 90, indefinite: false,
+            percentage: 90, smbIsOff: false, isPreset: false, id: "", overrideTarget: true, target: 120,
+            advancedSettings: false, isfAndCr: true, isf: false, cr: false, smbIsScheduledOff: false,
+            start: 0, end: 0, smbMinutes: 0, uamMinutes: 0)
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            group.addTask { try await shared.activateCustomOverride(custom, source: .app) }
+            group.addTask { try await shared.activateExerciseOverride(.presetName("Exercise preset"), identity: identity, durationMinutes: 30, activity: "Walk", source: .shortcut) }
+            try await group.waitForAll()
+        }
+        await testContext.perform { self.testContext.refreshAllObjects() }
+        #expect(try await overrides().filter(\.enabled).count == 1)
+        #expect(try await overrideRuns().count == 1)
+    }
+
+    @Test("Stale edit cleanup cannot cancel a newer exercise activation") func staleEditCleanup() async throws {
+        let oldID = await makeOverride(name: "Old manual", enabled: false, date: Date())
+        await makeOverride(name: "Exercise preset", enabled: false, date: Date())
+        let identity = ExerciseOverrideIdentity(sessionID: UUID(), startedAt: Date())
+        try await manager.activateExerciseOverride(.presetName("Exercise preset"), identity: identity, durationMinutes: 30, activity: "Walk", source: .shortcut)
+        try await manager.keepOnlyOverrideIfActive(oldID, source: .app)
+        #expect(try await manager.isExerciseOverrideActive(identity))
+        #expect(try await overrideRuns().isEmpty)
+    }
+
+    @Test("Late Home expiry tasks preserve an edited duration and newer rows") func staleHomeExpiry() async throws {
+        let start = Date().addingTimeInterval(-600)
+        let objectID = await makeOverride(name: "Manual", enabled: true, date: start, duration: 30, indefinite: false)
+        let oldExpiry = start.addingTimeInterval(1800)
+        #expect(!(try await manager.cancelOverrideIfActive(objectID, startedAt: start, expectedExpiry: oldExpiry, source: .app)))
+        try await testContext.perform {
+            let row = try self.testContext.existingObject(with: objectID) as! OverrideStored
+            row.duration = 5
+            try self.testContext.save()
+        }
+        #expect(!(try await manager.cancelOverrideIfActive(objectID, startedAt: start, expectedExpiry: oldExpiry, source: .app)))
+        #expect(try await overrides().filter(\.enabled).count == 1)
+        #expect(try await manager.cancelOverrideIfActive(objectID, startedAt: start, expectedExpiry: start.addingTimeInterval(300), source: .app))
+        #expect(try await overrideRuns().count == 1)
     }
 
     @Test("Every caller shares one manager") func testManagerIsShared() {

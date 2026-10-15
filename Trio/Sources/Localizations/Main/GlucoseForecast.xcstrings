@@ -1,0 +1,76 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "Forecast %lld min old": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "value": "Forecast %lld min old",
+            "state": "translated"
+          }
+        }
+      }
+    },
+    "In 15 min": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "value": "In 15 min",
+            "state": "translated"
+          }
+        }
+      }
+    },
+    "Glucose forecast in 15 minutes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "value": "Glucose forecast in 15 minutes",
+            "state": "translated"
+          }
+        }
+      }
+    },
+    "Unavailable or stale": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "value": "Unavailable or stale",
+            "state": "translated"
+          }
+        }
+      }
+    },
+    "Explains the forecast range": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "value": "Explains the forecast range",
+            "state": "translated"
+          }
+        }
+      }
+    },
+    "About this forecast": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "value": "About this forecast",
+            "state": "translated"
+          }
+        }
+      }
+    },
+    "The displayed value or range samples the available IOB, COB, UAM and ZT scenarios at 15 minutes from now. It is not a confidence interval or a guarantee. Missing, invalid or stale forecasts and stale glucose show a dash. This display does not change dosing or alarms.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "value": "The displayed value or range samples the available IOB, COB, UAM and ZT scenarios at 15 minutes from now. It is not a confidence interval or a guarantee. Missing, invalid or stale forecasts and stale glucose show a dash. This display does not change dosing or alarms.",
+            "state": "translated"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

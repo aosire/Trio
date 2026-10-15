@@ -84,7 +84,7 @@
 	<key>NSFaceIDUsageDescription</key>
 	<string>For authorized access to bolus</string>
 	<key>NSHealthShareUsageDescription</key>
-	<string>Health App is used to store blood glucose, carbs and insulin</string>
+	<string>Trio reads nutrition from your selected Health source to preview carbohydrate, fat, protein and sample times.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>Health App is used to store blood glucose, carbs and insulin</string>
 	<key>NSHumanReadableCopyright</key>

@@ -10,6 +10,7 @@ Inspected at baseline `1bacd86fb19dc325dff044b8cfe52fb7da6c8b98` on 2026-10-14. 
 - `Trio/Sources/Assemblies/`: APS, storage, service, UI, network, and security registrations.
 - `Trio/Sources/Modules/`: feature modules commonly use `DataFlow`, `Provider`, `StateModel`, and `View` files. Home, Treatments, Settings, PumpConfig, and algorithm settings are useful starting points.
 - `Trio/Sources/Modules/Treatments/TreatmentsStateModel.swift`: meal/bolus entry, calculator integration, max-bolus capping and authentication before delivery.
+- `Services/HealthKit/NutritionHealthPreview.swift` and `Modules/Settings/View/Subviews/NutritionHealthPreviewView.swift` under `Trio/Sources/`: explicit read-only source/time/macro qualification for Cronometer. No meal persistence or dosing input. `TrioTests/NutritionHealthPreviewTests.swift` covers grouping, source exclusion, invalid/unknown data and display-only corrections. See `AI/CRONOMETER_HEALTH_PREVIEW.md` for the blocked import boundary and required follow-on verification.
 - `Trio/Sources/Modules/Home/HomeStateModel+QuickPickTreatments.swift`: quick-pick carb persistence and authenticated bolus enactment, with separate outcome reporting.
 - `Trio/Sources/Localizations/Main/Localizable.xcstrings`: main string catalog. Follow `CONTRIBUTING.md`: English source strings; existing localization mechanisms.
 - `LiveActivity/`, `Trio Watch App/`, related watch extensions, and `Trio/Sources/Services/WatchManager/`: additional displays and watch interactions. Some watch actions can initiate treatment, so they are not purely presentational.
@@ -37,7 +38,10 @@ Inspected at baseline `1bacd86fb19dc325dff044b8cfe52fb7da6c8b98` on 2026-10-14. 
 
 ## Tests and build
 
+- `Services/Adjustments/ExerciseService.swift`, `ExerciseSettingsView` and `Shortcuts/Override/ExerciseIntents.swift`: durable exercise sessions and optional bounded preset copies. `AdjustmentManager` serializes manual/exercise activation and checks conditional endings atomically; `OpenAPS.fetchActiveOverrides` rejects ineffective owned rows at the dosing-input boundary. `ExerciseServiceTests` and nine added AdjustmentManager regressions cover this path. See `AI/EXERCISE_SESSIONS.md`.
+
 - `GlucoseChartBounds` in `Models/TrioSettings.swift` and `HomeStateModel+Setup/ChartAxisSetup.swift`: validated display domain and original automatic scale. `UserInterfaceSettings` edits the canonical pair; Home chart elements clip only in fixed mode. `TrioTests/GlucoseChartBoundsTests.swift` covers outliers, units and persistence. See `AI/FIXED_GLUCOSE_CHART.md`.
+- `GlucoseForecastSnapshot` in `Services/Alerts/ForecastedGlucoseEvaluator.swift`: immutable display-only samples and timed scenario range. Home forecast setup captures origin/identity; the right header shows a fifteen-minute result and age. The existing alarm evaluator remains separate. `TrioTests/ForecastedGlucoseEvaluatorTests.swift` also contains the fourteen-test display suite.
 
 - `TrioTests/OpenAPSSwiftTests/`: algorithm scenarios, limits, rounding, meal/IOB/autosensitivity, basal/SMB decisions, and parity fixtures.
 - `TrioTests/`: bolus safety/calculator, dosing-mode clamps/migration, delivery-limit sync, pump history, Core Data, glucose smoothing, alerts, watch-adjacent features, and treatment tests.

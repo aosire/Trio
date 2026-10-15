@@ -1,0 +1,516 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "Select a preset and a duration between 1 and 240 minutes.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select a preset and a duration between 1 and 240 minutes."
+          }
+        }
+      }
+    },
+    "This workout start is old or has an invalid time. It was not applied.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This workout start is old or has an invalid time. It was not applied."
+          }
+        }
+      }
+    },
+    "An exercise update is already in progress.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "An exercise update is already in progress."
+          }
+        }
+      }
+    },
+    "The exercise override is no longer the active adjustment.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The exercise override is no longer the active adjustment."
+          }
+        }
+      }
+    },
+    "This exercise session was already processed.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This exercise session was already processed."
+          }
+        }
+      }
+    },
+    "Exercise records could not be loaded. No exercise override was started.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exercise records could not be loaded. No exercise override was started."
+          }
+        }
+      }
+    },
+    "Exercise activity": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exercise activity"
+          }
+        }
+      }
+    },
+    "Indoor walk": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Indoor walk"
+          }
+        }
+      }
+    },
+    "Elliptical": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elliptical"
+          }
+        }
+      }
+    },
+    "Other exercise": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Other exercise"
+          }
+        }
+      }
+    },
+    "Start exercise session": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start exercise session"
+          }
+        }
+      }
+    },
+    "Log exercise and optionally apply your configured preset for a bounded duration.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Log exercise and optionally apply your configured preset for a bounded duration."
+          }
+        }
+      }
+    },
+    "Activity": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activity"
+          }
+        }
+      }
+    },
+    "Workout start time": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Workout start time"
+          }
+        }
+      }
+    },
+    "Session identifier": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Session identifier"
+          }
+        }
+      }
+    },
+    "Confirm before applying preset": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirm before applying preset"
+          }
+        }
+      }
+    },
+    "Start exercise with the configured override and time limit?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start exercise with the configured override and time limit?"
+          }
+        }
+      }
+    },
+    "Exercise session recorded. Check Trio for its current status.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exercise session recorded. Check Trio for its current status."
+          }
+        }
+      }
+    },
+    "End exercise session": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End exercise session"
+          }
+        }
+      }
+    },
+    "End only the exercise session with this identifier; preserve newer adjustments.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End only the exercise session with this identifier; preserve newer adjustments."
+          }
+        }
+      }
+    },
+    "Exercise end processed. Newer adjustments were preserved.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exercise end processed. Newer adjustments were preserved."
+          }
+        }
+      }
+    },
+    "Exercise": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exercise"
+          }
+        }
+      }
+    },
+    "Apply selected override when exercise starts": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apply selected override when exercise starts"
+          }
+        }
+      }
+    },
+    "Exercise preset": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exercise preset"
+          }
+        }
+      }
+    },
+    "Select a preset": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select a preset"
+          }
+        }
+      }
+    },
+    "Time limit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time limit"
+          }
+        }
+      }
+    },
+    "Save exercise settings": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save exercise settings"
+          }
+        }
+      }
+    },
+    "Logging only is the default. Enabling the preset replaces the running override using a bounded copy of your selection. Changes apply to future sessions. The original preset is unchanged. Review its settings in Adjustments; a percentage is not a hard cap on insulin delivered.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Logging only is the default. Enabling the preset replaces the running override using a bounded copy of your selection. Changes apply to future sessions. The original preset is unchanged. Review its settings in Adjustments; a percentage is not a hard cap on insulin delivered."
+          }
+        }
+      }
+    },
+    "Percentage": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Percentage"
+          }
+        }
+      }
+    },
+    "SMB disabled": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SMB disabled"
+          }
+        }
+      }
+    },
+    "Yes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yes"
+          }
+        }
+      }
+    },
+    "No": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No"
+          }
+        }
+      }
+    },
+    "Target": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Target"
+          }
+        }
+      }
+    },
+    "Exercise override session": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exercise override session"
+          }
+        }
+      }
+    },
+    "Logging only": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Logging only"
+          }
+        }
+      }
+    },
+    "End this exercise session": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End this exercise session"
+          }
+        }
+      }
+    },
+    "Current session": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Current session"
+          }
+        }
+      }
+    },
+    "In Shortcuts, create an Apple Watch Workout start automation for Walking or Elliptical. Add Trio’s Start exercise session action and choose the matching activity. Walking may include outdoor walks; check the available trigger options. Save your configuration here first. To run without a prompt, explicitly disable Confirm before applying preset in that action and choose Run Immediately in the automation.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In Shortcuts, create an Apple Watch Workout start automation for Walking or Elliptical. Add Trio’s Start exercise session action and choose the matching activity. Walking may include outdoor walks; check the available trigger options. Save your configuration here first. To run without a prompt, explicitly disable Confirm before applying preset in that action and choose Run Immediately in the automation."
+          }
+        }
+      }
+    },
+    "The time limit is the fallback if an end event is missed. For an end automation, save the identifier returned by Start and pass that exact identifier to End exercise session. Never use Cancel override as the workout-end action; it could stop a newer adjustment. Workout-type options and locked-phone delivery must be checked on your devices.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The time limit is the fallback if an end event is missed. For an end automation, save the identifier returned by Start and pass that exact identifier to End exercise session. Never use Cancel override as the workout-end action; it could stop a newer adjustment. Workout-type options and locked-phone delivery must be checked on your devices."
+          }
+        }
+      }
+    },
+    "Apple’s workout automation guide": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple’s workout automation guide"
+          }
+        }
+      }
+    },
+    "Apple Watch Workout": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Watch Workout"
+          }
+        }
+      }
+    },
+    "Preset requested": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preset requested"
+          }
+        }
+      }
+    },
+    "Recent exercise": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recent exercise"
+          }
+        }
+      }
+    },
+    "Awaiting reconciliation": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Awaiting reconciliation"
+          }
+        }
+      }
+    },
+    "Active": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Active"
+          }
+        }
+      }
+    },
+    "Ended": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ended"
+          }
+        }
+      }
+    },
+    "Time limit reached": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time limit reached"
+          }
+        }
+      }
+    },
+    "Override replaced or no longer active": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Override replaced or no longer active"
+          }
+        }
+      }
+    },
+    "Preset activation failed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preset activation failed"
+          }
+        }
+      }
+    },
+    "No active session": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No active session"
+          }
+        }
+      }
+    },
+    "Exercise session active": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exercise session active"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}
