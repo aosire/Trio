@@ -1410,7 +1410,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Trio reads nutrition from your selected Health source to preview carbohydrate, fat, protein and sample times."
+            "value" : "Health App is used to store blood glucose, insulin and carbohydrates"
           }
         },
         "es" : {

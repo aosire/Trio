@@ -580,7 +580,8 @@ extension Treatments {
                         progress: state.bolusProgress,
                         total: state.lastPumpBolus?.bolus?.amount as Decimal?,
                         retry: { state.retryBolusCancellation() },
-                        dismiss: { state.dismissBolusCancellationResult() }
+                        dismiss: { state.dismissBolusCancellationResult() },
+                        leave: { state.dismissCompletedBolusCancellationResult() }
                     )
                     .listRowBackground(Color.clear)
                     .listRowInsets(EdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10))

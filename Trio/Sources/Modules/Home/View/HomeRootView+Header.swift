@@ -8,23 +8,13 @@ private struct FifteenMinuteForecastView: View {
     let units: GlucoseUnits
     @State private var showExplanation = false
 
-    private func ageText(now: Date) -> String? {
-        guard let snapshot, now >= snapshot.origin,
-              now.timeIntervalSince(snapshot.origin).isFinite,
-              now.timeIntervalSince(snapshot.origin) < 24 * 60 * 60
-        else { return nil }
-        let age = Int(now.timeIntervalSince(snapshot.origin) / 60)
-        return String(localized: "Forecast \(age) min old", table: "GlucoseForecast")
-    }
-
     var body: some View {
         let now = max(timerDate, Date())
         let estimate = snapshot?.estimate(now: now, glucoseDate: glucoseDate)
-        let ageDescription = ageText(now: now)
         let value = (estimate?.formatted(units: units) ?? "—") + " " + units.rawValue
-        let spokenValue = spokenDescription(estimate: estimate, age: ageDescription)
+        let spokenValue = spokenDescription(estimate: estimate)
         return Button { showExplanation = true } label: {
-            forecastLabel(value: value, age: ageDescription, available: estimate != nil)
+            forecastLabel(value: value, available: estimate != nil)
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .ignore)
@@ -38,20 +28,19 @@ private struct FifteenMinuteForecastView: View {
         }
     }
 
-    private func spokenDescription(estimate: GlucoseForecastSnapshot.Estimate?, age: String?) -> String {
+    private func spokenDescription(estimate: GlucoseForecastSnapshot.Estimate?) -> String {
         let value: String
         if let estimate { value = estimate.formatted(units: units) + " " + units.spokenValue }
         else { value = String(localized: "Unavailable or stale", table: "GlucoseForecast") }
-        return value + (age.map { ". " + $0 } ?? "")
+        return value
     }
 
-    private func forecastLabel(value: String, age: String?, available: Bool) -> some View {
+    private func forecastLabel(value: String, available: Bool) -> some View {
         VStack(spacing: 2) {
             Text(String(localized: "In 15 min", table: "GlucoseForecast")).font(.caption2)
             Text(value)
                 .font(.caption).fontWeight(.semibold).monospacedDigit()
                 .lineLimit(1).minimumScaleFactor(0.8)
-            if let age { Text(age).font(.system(size: 9)) }
         }
         .foregroundStyle(available ? Color.primary : Color.secondary)
         .frame(minHeight: 44)

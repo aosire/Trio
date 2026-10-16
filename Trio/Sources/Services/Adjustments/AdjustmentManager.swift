@@ -68,11 +68,7 @@ protocol AdjustmentManager {
     func activateCustomOverride(_ configuration: Override, source: AdjustmentSource) async throws
     func keepOnlyOverrideIfActive(_ objectID: NSManagedObjectID, source: AdjustmentSource) async throws
     func cancelOverrideIfActive(_ objectID: NSManagedObjectID, startedAt: Date?, expectedExpiry: Date?, source: AdjustmentSource) async throws -> Bool
-    func activateExerciseOverride(
-        _ preset: AdjustmentRef, identity: ExerciseOverrideIdentity, durationMinutes: Int, activity: String, source: AdjustmentSource
-    ) async throws
-    func cancelExerciseOverride(_ identity: ExerciseOverrideIdentity, source: AdjustmentSource) async throws -> Bool
-    func isExerciseOverrideActive(_ identity: ExerciseOverrideIdentity) async throws -> Bool
+    func cancelLegacyExerciseOverride(_ identity: LegacyExerciseOverrideIdentity, source: AdjustmentSource) async throws -> Bool
     @discardableResult func activateOverride(
         _ preset: AdjustmentRef,
         source: AdjustmentSource,
@@ -158,29 +154,11 @@ final class BaseAdjustmentManager: AdjustmentManager, Injectable, @unchecked Sen
         return true
     }
 
-    func activateExerciseOverride(
-        _ preset: AdjustmentRef, identity: ExerciseOverrideIdentity, durationMinutes: Int, activity: String, source: AdjustmentSource
-    ) async throws {
-        _ = try await serializer.run {
-            try await self.commitOverride(activating: preset, exercise: (identity, durationMinutes, activity))
-        }
-        await applyOverrideSideEffects(source: source, waitForUpload: false)
-    }
-
-    func cancelExerciseOverride(_ identity: ExerciseOverrideIdentity, source: AdjustmentSource) async throws -> Bool {
-        do {
-            _ = try await serializer.run { try await self.commitOverride(activating: nil, cancellingExercise: identity) }
-        } catch ExerciseError.replaced { return false }
+    func cancelLegacyExerciseOverride(_ identity: LegacyExerciseOverrideIdentity, source: AdjustmentSource) async throws -> Bool {
+        let outcome = try await serializer.run { try await self.commitOverride(activating: nil, cancellingLegacyExercise: identity) }
+        guard !outcome.ended.isEmpty else { return false }
         await applyOverrideSideEffects(source: source, waitForUpload: false)
         return true
-    }
-
-    func isExerciseOverrideActive(_ identity: ExerciseOverrideIdentity) async throws -> Bool {
-        let context = makeContext()
-        return try await context.perform {
-            let active = try self.fetchActiveOverrides(in: context)
-            return active.count == 1 && active[0].id == identity.storedID && active[0].date == identity.startedAt
-        }
     }
 
     @discardableResult func activateOverride(
@@ -206,8 +184,7 @@ final class BaseAdjustmentManager: AdjustmentManager, Injectable, @unchecked Sen
     /// or with two adjustments enabled at once.
     private func commitOverride(
         activating preset: AdjustmentRef?,
-        exercise: (identity: ExerciseOverrideIdentity, duration: Int, activity: String)? = nil,
-        cancellingExercise: ExerciseOverrideIdentity? = nil,
+        cancellingLegacyExercise: LegacyExerciseOverrideIdentity? = nil,
         custom: Override? = nil,
         keeping: NSManagedObjectID? = nil,
         cancellingRow: (id: NSManagedObjectID, start: Date?, expiry: Date?)? = nil
@@ -261,31 +238,10 @@ final class BaseAdjustmentManager: AdjustmentManager, Injectable, @unchecked Sen
                 target = row
             }
 
-            if let identity = cancellingExercise {
+            if let identity = cancellingLegacyExercise {
                 guard active.count == 1, active[0].id == identity.storedID, active[0].date == identity.startedAt else {
-                    throw ExerciseError.replaced
+                    return AdjustmentOutcome(started: nil, ended: [])
                 }
-            }
-
-            if let exercise {
-                guard let original = target, original.isPreset, (1 ... 240).contains(exercise.duration),
-                      exercise.identity.startedAt.timeIntervalSince1970.isFinite,
-                      now >= exercise.identity.startedAt, now.timeIntervalSince(exercise.identity.startedAt) <= 120
-                else { throw ExerciseError.invalidConfiguration }
-                let request: NSFetchRequest<OverrideStored> = OverrideStored.fetchRequest()
-                request.predicate = NSPredicate(format: "id == %@", exercise.identity.storedID)
-                guard try context.count(for: request) == 0 else { throw ExerciseError.duplicateIdentity }
-                // Copy scalar preset settings, never its relationships. The source
-                // preset's duration and therapy configuration remain unchanged.
-                let copy = OverrideStored(context: context)
-                for key in original.entity.attributesByName.keys { copy.setValue(original.value(forKey: key), forKey: key) }
-                copy.id = exercise.identity.storedID
-                copy.name = String(localized: "Exercise", table: "Exercise") + " · " + exercise.activity + " · " + (original.name ?? "")
-                copy.isPreset = false
-                copy.indefinite = false
-                copy.duration = NSDecimalNumber(value: exercise.duration)
-                copy.enabled = false
-                target = copy
             }
 
             if preset == nil, custom == nil, keeping == nil, active.isEmpty {
@@ -314,7 +270,7 @@ final class BaseAdjustmentManager: AdjustmentManager, Injectable, @unchecked Sen
             var started: AdjustmentSummary?
             if let target {
                 target.enabled = true
-                target.date = exercise?.identity.startedAt ?? now
+                target.date = now
                 target.isUploadedToNS = false
                 started = AdjustmentSummary(row: target, startDate: target.date ?? now, endDate: nil)
             }

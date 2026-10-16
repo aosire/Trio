@@ -577,8 +577,8 @@ struct EditOverrideForm: View {
     }
 
     private func saveChanges() {
-        // An explicit manual edit detaches this row from the original exercise
-        // receipt; a later workout-end action must preserve the user's edit.
+        // An explicit edit converts a legacy exercise row into an ordinary
+        // manual override, including its normal user-selected expiry behavior.
         if override.id?.hasPrefix("trio-exercise:") == true { override.id = UUID().uuidString }
         if !override.isPreset, hasChanges, name == (override.name ?? "") {
             override.name = "Custom Override"

@@ -1,8 +1,12 @@
 # Cronometer source and time qualification
 
+**Removed on 2026-10-16 at the owner's request.** This is a historical design/verification record. The preview UI, read gateway, resource catalog and feature-only tests are removed. HealthKit read-purpose text is restored; ordinary Trio Health export and manually entered carbs/fat/protein/FPU behavior remain unchanged. No Health samples or therapy records are deleted. There is no active Cronometer import or preview functionality.
+
 Request: import timed carbs, fat and protein from Cronometer with the existing FPU behavior and an explicit review before dosing. This first PR supplies the read-only phone-side inspection needed to qualify the external data. It does **not** complete meal import or bolus integration.
 
 Base: exercise PR #5 repaired head `061bcd54de0aa7cda72021329eb98d5f607eca3f`, stacked after forecast #4 and chart #3; fork base `2eb1a73354bc10667b5c26bffad170b5206bfd81`; upstream `1bacd86fb19dc325dff044b8cfe52fb7da6c8b98`. Branch `codex/cronometer-inbox`.
+
+PR: https://github.com/aosire/Trio/pull/6. The first iOS build exposed a Swift Testing `rethrows` key-path macro compile error in an assertion; evaluating the predicate before the assertion repaired it without dropping coverage. Final head `8e3ddc14de002479bb2b6cb4276d40d96ff567d4`, exact-head run https://github.com/aosire/Trio/actions/runs/38588049467 passed: 870 iOS tests/115 suites, all seventeen new preview regressions individually confirmed and `TEST EXECUTE SUCCEEDED`; 226 algorithm tests/32 suites including 14 golden parity cases. Counts overlap and existing exclusions remain; no new skips. Logs were inspected before PR #6 was marked ready for review. This verifies the tested code, not the actual external source format or a completed importer. A temporary verification probe ref `codex/cronometer-preview-ci` was created at earlier head `fde56e3a31d4b7574d59d01b01833e68799e4584` while connector PR/run metadata was stale; no release workflow was dispatched. These status notes were initially kept local and are carried forward with the 2026-10-16 cleanup.
 
 ## Why qualification is required
 
@@ -30,6 +34,6 @@ The current BaseCarbsStorage batch interface persists only the last real entry a
 
 ## Verification and upstream considerations
 
-Seventeen regression tests cover source separation, exact-time grouping, unknown versus zero macros, spans, duplicate IDs, invalid dates/amounts/overflow, bounded corrections, unchanged raw identities/metadata, future dates and quantity type mapping. Fixtures are synthetic. Full exact-head iOS and algorithm CI must pass and logs be inspected before readiness. The actual Cronometer payload, read permission flow, locked-phone errors, display/accessibility and source timing remain unverified until inspected on a phone. Unit tests cannot establish the external source's correctness.
+Seventeen regression tests cover source separation, exact-time grouping, unknown versus zero macros, spans, duplicate IDs, invalid dates/amounts/overflow, bounded corrections, unchanged raw identities/metadata, future dates and quantity type mapping. Fixtures are synthetic. Full exact-head iOS and algorithm CI passed and logs were inspected, as recorded above. Actual Cronometer payload, read permission flow, locked-phone errors, display/accessibility and source timing remain unverified until inspected on a phone. Unit tests cannot establish the external source's correctness.
 
 Keep the dedicated gateway, view, catalog and test registrations separate from ordinary Health export. No Core Data migration, dependency change, driver update or release dispatch. Revert the preview commit to remove it; there is no persisted preview data to migrate. Future upstream changes may need conflicts resolved in Features/project registrations, preserving the read-only boundary until import verification exists.

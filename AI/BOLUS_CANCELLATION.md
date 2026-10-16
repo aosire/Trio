@@ -17,6 +17,8 @@ These code findings explain plausible failure/feedback paths. The original devic
 
 ## Implementation
 
+2026-10-16 follow-up: when the shared Home/Treatments status panel disappears, dismiss only a currently pump-confirmed `.stopped` result. The main-actor coordinator checks its latest state, so a stale view cannot hide a newer pending/uncertain/failed cancellation or discard its retry. Navigation sends no pump command and changes no bolus reservation, dosing setting or authentication. Leaving before confirmation preserves the pending request; a later acknowledgement can still be shown on return. Four deterministic regressions cover success, pending and unconfirmed navigation plus a stale disappearance after a later failure.
+
 - `BolusCancellationCoordinator` synchronously publishes a pending state and reserves one task before notifying subscribers. Repeated taps, including a reentrant publisher subscriber, join the reserved task.
 - Home and Treatments immediately copy that state on the main actor. They share a status panel with progress, a spinner, clear waiting/uncertain wording, an explicit failure retry, and a pump-confirmed result. The panel remains visible independently of the progress reporter.
 - Both Cancel icons and the result-panel actions have a minimum 44-by-44-point tap area. VoiceOver retains the estimated-delivery value alongside the pending/result description. A terminal failure warning can be explicitly dismissed without sending a pump command; dismissal does not stop insulin and does not release a still-pending command.

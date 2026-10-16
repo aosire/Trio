@@ -1,16 +1,6 @@
 {
   "sourceLanguage": "en",
   "strings": {
-    "Forecast %lld min old": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "value": "Forecast %lld min old",
-            "state": "translated"
-          }
-        }
-      }
-    },
     "In 15 min": {
       "localizations": {
         "en": {
