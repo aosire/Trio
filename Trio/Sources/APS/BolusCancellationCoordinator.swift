@@ -151,6 +151,13 @@ final class BolusCancellationCoordinator {
         state.send(.idle)
     }
 
+    /// Navigation may discard a confirmed success, never an unresolved stop or
+    /// a failed request. Check the current shared state, not a view's stale copy.
+    @MainActor func dismissStoppedResult() {
+        guard activeTask == nil, state.value == .stopped else { return }
+        dismissResult()
+    }
+
     /// An explicit Retry must keep the original context too. Capturing the pump
     /// again here could stop a later dose after the original request failed.
     @MainActor @discardableResult func retryLastRequest() -> Task<Outcome, Never>? {

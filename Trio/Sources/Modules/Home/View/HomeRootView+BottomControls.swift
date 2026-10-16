@@ -106,7 +106,7 @@ extension Home.RootView {
 
             } else {
                 /// Do not show the Override anymore
-                let expectedExercise = ExerciseOverrideIdentity.fromStored(id: latestOverride.id, start: latestOverride.date)
+                let expectedExercise = LegacyExerciseOverrideIdentity.fromStored(id: latestOverride.id, start: latestOverride.date)
                 let expiredObjectID = latestOverride.objectID
                 let expectedExpiry = date.addingTimeInterval(addedMinutes.minutes.timeInterval)
                 Task {
@@ -821,7 +821,8 @@ extension Home.RootView {
                         progress: state.bolusProgress,
                         total: state.lastPumpBolus?.bolus?.amount as Decimal?,
                         retry: { state.retryBolusCancellation() },
-                        dismiss: { state.dismissBolusCancellationResult() }
+                        dismiss: { state.dismissBolusCancellationResult() },
+                        leave: { state.dismissCompletedBolusCancellationResult() }
                     )
                     .padding(.horizontal, 10)
                 } else if let progress = state.bolusProgress {

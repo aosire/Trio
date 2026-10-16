@@ -1,5 +1,7 @@
 # Exercise sessions and optional preset application
 
+**Removed on 2026-10-16 at the owner's request.** This document preserves historical implementation/verification details. Home/Settings UI, Workout AppIntents, session service, preset activation API and catalogs are removed. Existing presets/history and the local journal are not deleted or replayed. `LegacyExerciseOverrideIdentity` retains only hard expiry and conditional ending for overrides already persisted by older versions. Those settings remain effective until their existing expiry or an explicit manual change/cancel; no new exercise sessions can start. Ordinary upstream exercise preferences and manual overrides remain unchanged.
+
 Base: forecast PR #4 head `480e446c1586c418f9339e4a274e7b6454c48dec`, stacked after chart PR #3 and rooted in merged fork `2eb1a73354bc10667b5c26bffad170b5206bfd81`. Upstream remains `1bacd86fb19dc325dff044b8cfe52fb7da6c8b98`. Branch: `codex/exercise-mode`.
 
 PR: https://github.com/aosire/Trio/pull/5. Initial CI head `b259a5a49fa662a5194c076cb5403791dd6f1d72` passed 226 algorithm tests including 14 golden cases, but failed the iOS build because this project defines a `Link` view modifier that shadows `SwiftUI.Link`. Qualifying the guide link fixes that name collision; full tests must run on the repaired head before readiness.
@@ -16,6 +18,8 @@ Use an Apple Watch Workout start personal automation with Trio's **Start exercis
 
 Start returns a session UUID. An end automation must pass that exact UUID to **End exercise session**; it must not use the generic Cancel override action. A global variable overwritten by a newer workout is not reliable event-to-session matching. A start-only automation can use the bounded duration and manual end instead. The intent accepts an optional original start time and event UUID for workflows that preserve them. Starts older than two minutes or in the future are rejected. Duplicate identifiers remain consumed, and starts received while a session is open coalesce without extending it. This is not HealthKit workout-history replay, native live mirroring or pause/resume detection.
 
+When the optional original start time is absent, the intent uses its execution time. The freshness check then cannot establish how old the original Watch trigger is. Validate event delivery with logging only before configuring an unattended preset action; do not interpret the unit-tested freshness policy as proof of Watch delivery fidelity.
+
 ## Ownership, persistence and expiry
 
 `ExerciseService` serializes foreground/intent mutations on the main actor. Its throwing atomic JSON journal records configuration, sessions and consumed-start aliases in the app's Documents `trio-exercise-sessions.json`. An ownership record is saved before any override activation. Failure to save it blocks activation. After-activation persistence failure retains the earlier preparing record for reconciliation. Corrupt/unreadable history blocks new therapy-changing starts. Recovery queries ownership and never replays activation. The journal is separate from the current settings export and is not uploaded by this feature; the applied override uses existing optional Nightscout history/upload behavior.
@@ -27,6 +31,8 @@ Manual preset/custom activation in Adjustments now uses that same writer to prev
 Ordinary override expiry currently includes Home presentation handling. Exercise must not depend on that view running: `OpenAPS.fetchActiveOverrides` additionally excludes expired, future, malformed or indefinite **owned exercise** rows before constructing dosing inputs. Ordinary override semantics are preserved. Foreground reconciliation finalizes the corresponding row/history when possible. The dosing-input guard works independently of journal availability, a missed Watch end, Home visibility or background timer delivery.
 
 ## Verification and limits
+
+Final tested head `061bcd54de0aa7cda72021329eb98d5f607eca3f`, run https://github.com/aosire/Trio/actions/runs/38584261021: 853 iOS tests/114 suites and 226 algorithm tests/32 suites passed, including every new exercise/adjustment regression and 14 golden parity cases. Logs were inspected before marking PR #5 ready. Existing upstream exclusions remain in `AI/CHANGELOG.md`; no new skips. This result-only note was initially kept local and is carried forward with the 2026-10-16 cleanup.
 
 Twenty fake-operation session tests cover default logging-only behavior, durable ownership before activation, duplicate/concurrent/stale events, manual replacement, old ends, expiry, restart, persistence failures, activation/cancellation failures, actual journal round-trip/corruption and dosing expiry boundaries. Nine Core Data integration tests cover copying all therapy fields, conditional ending/history, replacement, duplicate/missing preset atomicity, exact date ownership, the real OpenAPS fetch boundary, manual/exercise activation concurrency, stale edit cleanup and stale Home expiry. Existing algorithm/SMB/dosing-mode and app suites must also pass on the proposed head; no goldens are regenerated or tests disabled.
 

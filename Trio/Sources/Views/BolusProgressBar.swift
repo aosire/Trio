@@ -35,6 +35,7 @@ struct BolusCancellationStatusView: View {
     let total: Decimal?
     let retry: () -> Void
     let dismiss: () -> Void
+    let leave: () -> Void
 
     private var title: String {
         switch state {
@@ -120,5 +121,6 @@ struct BolusCancellationStatusView: View {
         }
         .buttonStyle(.borderless)
         .accessibilityIdentifier("bolusCancellationStatus")
+        .onDisappear(perform: leave)
     }
 }

@@ -316,6 +316,11 @@ extension Treatments {
             bolusCancellationState = apsManager.bolusCancellationState.value
         }
 
+        @MainActor func dismissCompletedBolusCancellationResult() {
+            apsManager.dismissCompletedBolusCancellationResult()
+            bolusCancellationState = apsManager.bolusCancellationState.value
+        }
+
         @MainActor func retryBolusCancellation() {
             apsManager.retryBolusCancellation()
             bolusCancellationState = apsManager.bolusCancellationState.value

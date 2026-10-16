@@ -7,6 +7,71 @@ import Testing
 @Suite("Bolus cancellation") @MainActor struct BolusCancellationTests {
     private enum TestError: Error { case disconnected, rejected }
 
+    @Test("Leaving a cancellation view clears only the pump-confirmed success") func leaveAfterSuccess() async {
+        let coordinator = BolusCancellationCoordinator()
+        let task = coordinator.request(mayCancel: { true }, cancel: {}, shouldRetry: { _ in false })
+        _ = await task.value
+        #expect(coordinator.state.value == .stopped)
+        coordinator.dismissStoppedResult()
+        #expect(coordinator.state.value == .idle)
+        #expect(coordinator.retryLastRequest() == nil)
+        coordinator.dismissStoppedResult()
+        #expect(coordinator.state.value == .idle)
+    }
+
+    @Test("Leaving while cancellation is pending preserves the command reservation") func leaveWhilePending() async {
+        let coordinator = BolusCancellationCoordinator()
+        let entered = Latch()
+        let release = Latch()
+        var commands = 0
+        let task = coordinator.request(mayCancel: { true }, cancel: {
+            commands += 1
+            entered.open()
+            await release.wait()
+        }, shouldRetry: { _ in false })
+        await entered.wait()
+        coordinator.dismissStoppedResult()
+        #expect(coordinator.state.value == .cancelling)
+        #expect(coordinator.activeTask != nil)
+        release.open()
+        _ = await task.value
+        #expect(commands == 1)
+        #expect(coordinator.state.value == .stopped)
+    }
+
+    @Test("Leaving an unconfirmed cancellation never hides its uncertainty warning") func leaveWhileUnconfirmed() async {
+        let coordinator = BolusCancellationCoordinator()
+        let release = Latch()
+        let warned = Latch()
+        let task = coordinator.request(mayCancel: { true }, cancel: { await release.wait() }, shouldRetry: { _ in false },
+            warningDelay: {}, onUnconfirmed: { warned.open() })
+        await warned.wait()
+        coordinator.dismissStoppedResult()
+        #expect(coordinator.state.value == .unconfirmed)
+        #expect(coordinator.activeTask != nil)
+        release.open()
+        _ = await task.value
+    }
+
+    @Test("A stale success-view disappearance preserves a later failure and its retry") func staleLeaveAfterFailure() async {
+        let coordinator = BolusCancellationCoordinator()
+        _ = await coordinator.request(mayCancel: { true }, cancel: {}, shouldRetry: { _ in false }).value
+        var fail = true
+        let failure = coordinator.request(mayCancel: { true }, cancel: {
+            if fail { throw TestError.rejected }
+        }, shouldRetry: { _ in false })
+        _ = await failure.value
+        let warning = coordinator.state.value
+        coordinator.dismissStoppedResult()
+        #expect(coordinator.state.value == warning)
+        if case .failed = warning {} else { Issue.record("Expected an explicit failure") }
+        fail = false
+        let retry = coordinator.retryLastRequest()
+        #expect(retry != nil)
+        _ = await retry?.value
+        #expect(coordinator.state.value == .stopped)
+    }
+
     /// A deterministic async boundary: no sleeps or timing-based assertions.
     @MainActor private final class Latch {
         private var isOpen = false

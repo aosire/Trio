@@ -4,18 +4,6 @@ import Foundation
 struct AppShortcuts: AppShortcutsProvider {
     @AppShortcutsBuilder static var appShortcuts: [AppShortcut] {
         AppShortcut(
-            intent: StartExerciseIntent(),
-            phrases: ["Start exercise in \(.applicationName)"],
-            shortTitle: LocalizedStringResource("Start exercise session", table: "Exercise"),
-            systemImageName: "figure.walk"
-        )
-        AppShortcut(
-            intent: EndExerciseIntent(),
-            phrases: ["End exercise in \(.applicationName)"],
-            shortTitle: LocalizedStringResource("End exercise session", table: "Exercise"),
-            systemImageName: "stop.circle"
-        )
-        AppShortcut(
             intent: BolusIntent(),
             phrases: [
                 "\(.applicationName) bolus",

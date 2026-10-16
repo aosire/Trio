@@ -49,15 +49,15 @@ extension Home.StateModel {
     // MARK: - Override Actions
 
     /// Cancels the running Override, creates an entry in the OverrideRunStored Core Data entity and posts a custom notification so that the AdjustmentsView gets updated
-    @MainActor func cancelOverride(withID id: NSManagedObjectID, expectedExercise: ExerciseOverrideIdentity? = nil, expectedExpiry: Date? = nil) async {
+    @MainActor func cancelOverride(withID id: NSManagedObjectID, expectedExercise: LegacyExerciseOverrideIdentity? = nil, expectedExpiry: Date? = nil) async {
         do {
             if let expectedExercise {
-                _ = try await adjustmentManager.cancelExerciseOverride(expectedExercise, source: .app)
+                _ = try await adjustmentManager.cancelLegacyExerciseOverride(expectedExercise, source: .app)
                 return
             }
             guard let profileToCancel = try viewContext.existingObject(with: id) as? OverrideStored else { return }
-            if let identity = ExerciseOverrideIdentity.fromStored(id: profileToCancel.id, start: profileToCancel.date) {
-                _ = try await adjustmentManager.cancelExerciseOverride(identity, source: .app)
+            if let identity = LegacyExerciseOverrideIdentity.fromStored(id: profileToCancel.id, start: profileToCancel.date) {
+                _ = try await adjustmentManager.cancelLegacyExerciseOverride(identity, source: .app)
                 return
             }
 

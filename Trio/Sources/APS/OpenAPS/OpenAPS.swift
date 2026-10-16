@@ -800,7 +800,7 @@ extension OpenAPS {
             fetchLimit: 1
         ) as? [OverrideStored] ?? []
         return rows.filter {
-            ExerciseOverrideIdentity.isEffective(
+            LegacyExerciseOverrideIdentity.isEffective(
                 id: $0.id, start: $0.date, duration: $0.duration?.decimalValue, indefinite: $0.indefinite, now: Date()
             )
         }

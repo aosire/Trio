@@ -21,9 +21,9 @@ This folder records the owner's requirements and the differences introduced by A
 
 ## Comparing with upstream
 
-Exercise configuration, ownership and automation limits are documented in [EXERCISE_SESSIONS.md](EXERCISE_SESSIONS.md).
+Removed exercise logging/preset-session functionality is recorded historically in [EXERCISE_SESSIONS.md](EXERCISE_SESSIONS.md). Only compatibility expiry/ending for already-persisted overrides remains.
 
-Cronometer source/time qualification and the remaining dosing-import work are documented in [CRONOMETER_HEALTH_PREVIEW.md](CRONOMETER_HEALTH_PREVIEW.md).
+The removed Cronometer preview is recorded historically in [CRONOMETER_HEALTH_PREVIEW.md](CRONOMETER_HEALTH_PREVIEW.md); there is no active import/preview feature.
 
 The fifteen-minute Home forecast is documented in [FIFTEEN_MINUTE_FORECAST.md](FIFTEEN_MINUTE_FORECAST.md).
 
